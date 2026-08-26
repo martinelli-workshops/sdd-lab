@@ -1,5 +1,5 @@
 {
-  "name": "SDD Workshop",
+  "name": "AIUP Workshop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
@@ -17,7 +17,7 @@
         "vscjava.vscode-java-pack",
         "vmware.vscode-boot-dev-pack",
         "vaadin.vaadin-vscode",
-        "unifiedprocess.aiup"
+        "aiup.aiup-navigator"
       ]
     }
   },
