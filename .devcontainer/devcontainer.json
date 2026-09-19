@@ -12,19 +12,24 @@
     },
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "onCreateCommand": "bash .devcontainer/warmup.sh",
+  "onCreateCommand": "bash .devcontainer/warmup.sh && git clone --depth 1 https://github.com/ai-unified-process/marketplace.git /home/vscode/aiup-marketplace",
   "postCreateCommand": "bash .devcontainer/setup-branch.sh",
   "customizations": {
     "vscode": {
       "extensions": [
         "vscjava.vscode-java-pack",
         "vmware.vscode-boot-dev-pack",
-        "aiup.aiup-navigator"
+        "aiup.aiup-navigator",
+        "GitHub.copilot-chat"
       ],
       "settings": {
         "java.configuration.updateBuildConfiguration": "automatic",
         "files.eol": "\n",
-        "chat.plugins.enabled": true
+        "chat.plugins.enabled": true,
+        "chat.pluginLocations": {
+          "/home/vscode/aiup-marketplace/aiup-core": true,
+          "/home/vscode/aiup-marketplace/aiup-vaadin-jooq": true
+        }
       }
     }
   },
