@@ -23,7 +23,8 @@
       ],
       "settings": {
         "java.configuration.updateBuildConfiguration": "automatic",
-        "files.eol": "\n"
+        "files.eol": "\n",
+        "chat.plugins.enabled": true
       }
     }
   },
