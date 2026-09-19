@@ -1,6 +1,6 @@
 # HRS - Spec-Driven Development Workshop
 
-This is the companion application for the [**Spec-Driven Development (SDD) Workshop**](https://martinelli.ch/sdd).<br>
+This is the companion application for the **Spec-Driven Development (SDD) Workshop**<br>
 It serves as a hands-on project where participants learn to build applications by driving implementation from
 specifications.
 
