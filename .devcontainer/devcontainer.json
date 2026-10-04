@@ -24,7 +24,12 @@
       ],
       "settings": {
         "java.configuration.updateBuildConfiguration": "automatic",
-        "files.eol": "\n"
+        "files.eol": "\n",
+        "chat.plugins.enabled": true,
+        "chat.pluginLocations": {
+          "/home/vscode/.aiup/marketplace/aiup-core": true,
+          "/home/vscode/.aiup/marketplace/aiup-vaadin-jooq": true
+        }
       }
     }
   },
