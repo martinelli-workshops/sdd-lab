@@ -9,11 +9,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="theme.css">
 <style>
-body { font-family: var(--font-body); padding: 48px 16px; }
-main { max-width: 1040px; margin: 0 auto; }
+html, body { height: auto; }
+body { font-family: var(--font-body); font-size: clamp(17px, 1.5vw, 24px); line-height: 1.45; padding: 48px 16px; min-height: 100vh; box-sizing: border-box; }
+main { max-width: 1280px; margin: 0 auto; }
+.part-card { font-size: 1em; padding: 1em 1.2em; }
+.part-card .when { font-size: 0.7em; }
+.tag { font-size: 0.65em !important; }
 h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; margin: 0 0 0.3em; }
 p.lead { color: var(--muted); margin: 0 0 2em; }
-.parts { font-size: 1.05rem; }
+.parts { font-size: 1em; }
+.part-card h3 { font-size: 1.15em; }
 @media (max-width: 760px) { .parts { grid-template-columns: 1fr; } }
 a.part-card { color: var(--ink); text-decoration: none; transition: border-color .15s; }
 a.part-card:hover, a.part-card:focus-visible { border-color: var(--accent); outline: none; }
