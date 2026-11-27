@@ -712,7 +712,6 @@ exit 2  # blocks, stderr goes to the agent</code></pre>
         <li>The agent builds faster than the business can decide what it wants</li>
         <li>Unclear requirements give plausible but wrong code</li>
         <li>Large legacy code does not fit. The agent sees only what you give it</li>
-        <li>Modularity is now a requirement: self-contained systems keep the context small</li>
       </ul>
     </div>
     <div class="box">
@@ -725,11 +724,43 @@ exit 2  # blocks, stderr goes to the agent</code></pre>
       </ul>
     </div>
   </div>
-  <p class="small muted" style="margin-top:0.9em">Teams get smaller (1–2 developers per system), move from sprints to Kanban and track progress per use case.</p>
 </section>
 
 <section>
   <div class="eyebrow"><b>Practice</b><span>12:47</span></div>
+  <h2>Impact on the architecture</h2>
+  <p class="small" style="margin-top:-0.4em">Context is the first bottleneck: the agent sees only what fits, and every file in the context is paid for again in every turn.</p>
+  <div class="cols3" style="font-size:0.88em">
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Modular architecture</h3>
+      <p class="muted small">→ Self-contained systems</p>
+      <ul>
+        <li>One system, its use cases, its entities: a small context per task</li>
+        <li>No modules yet? Cutting them is part of the modernization</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>One ecosystem</h3>
+      <p class="muted small">→ Full-stack frameworks</p>
+      <ul>
+        <li>One language, one build, one test stack, e.g. Vaadin or Hilla</li>
+        <li>One set of guardrails covers everything: ArchUnit, one test runner</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Harnessable code</h3>
+      <p class="muted small">→ Easy to check</p>
+      <ul>
+        <li>Strong types: the compiler is the first sensor</li>
+        <li>Clear module boundaries a rule can enforce, known frameworks</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:0.7em">Teams get smaller: 1–2 developers per self-contained system, Kanban, progress per use case. <b>Architecture is now also a cost decision.</b></p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Practice</b><span>12:49</span></div>
   <h2>Risk-based review at Anthropic</h2>
   <div class="review">
     <ol class="steps">
@@ -763,7 +794,7 @@ exit 2  # blocks, stderr goes to the agent</code></pre>
 </section>
 
 <section>
-  <div class="eyebrow"><b>Risks</b><span>12:50</span></div>
+  <div class="eyebrow"><b>Risks</b><span>12:51</span></div>
   <h2>Risks and how to handle them</h2>
   <table>
     <tr><th>Risk</th><th>Mitigation</th></tr>
@@ -778,7 +809,7 @@ exit 2  # blocks, stderr goes to the agent</code></pre>
 </section>
 
 <section>
-  <div class="eyebrow"><b>Practice</b><span>12:52</span></div>
+  <div class="eyebrow"><b>Practice</b><span>12:53</span></div>
   <h2>Harness engineering in practice</h2>
   <div class="cols">
     <ul>
@@ -787,7 +818,6 @@ exit 2  # blocks, stderr goes to the agent</code></pre>
       <li><b>Behavior is the weakest harness:</b> specs and test cases fill the gap</li>
     </ul>
     <ul>
-      <li><b>Make the code harnessable:</b> strong types, clear module boundaries, known frameworks</li>
       <li><b>Share it like code:</b> versioned and reviewed, one harness for the team</li>
       <li><b>Measure:</b> first-pass rate of the Werkstatt, review findings, tokens per use case</li>
     </ul>
