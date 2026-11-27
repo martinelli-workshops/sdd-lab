@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec-Driven Development · Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="reveal.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ OPENING ============ -->
+<section class="title-slide">
+  <a class="logo" href="https://martinelli.ch" target="_blank" rel="noopener" aria-label="Martinelli GmbH"></a>
+  <span class="tag">Part 2 of 3 · Day 1 · 14:00–17:00</span>
+  <h1>From use cases to code and tests</h1>
+  <p class="contact-name">Spec-Driven Development with the AI Unified Process · Simon Martinelli</p>
+  <dl class="contacts">
+    <dt>Web</dt><dd><a href="https://martinelli.ch" target="_blank" rel="noopener">martinelli.ch</a></dd>
+    <dt>AI Unified Process</dt><dd><a href="https://unifiedprocess.ai" target="_blank" rel="noopener">unifiedprocess.ai</a></dd>
+    <dt>Lab</dt><dd><a href="https://github.com/martinelli-workshops/sdd-lab" target="_blank" rel="noopener">github.com/martinelli-workshops/sdd-lab</a></dd>
+  </dl>
+</section>
+
+<section class="overview-slide">
+  <div class="eyebrow"><b>The workshop</b><span>14:00</span></div>
+  <h2>Where we are</h2>
+  <div class="parts">
+    <div class="part-card">
+      <span class="when">Day 1 · 10:00–13:00 · done</span>
+      <h3>1 · From vision to use cases</h3>
+      <ul><li>Requirements and glossary</li><li>Use case diagram, entity model</li><li>One specified, reviewed use case</li></ul>
+    </div>
+    <div class="part-card now">
+      <span class="when">Day 1 · 14:00–17:00 · now</span>
+      <h3>2 · From use cases to code and tests</h3>
+      <ul><li>The stack file, layer skills</li><li>Implement, test, coverage</li><li>Changing requirements</li><li>Business processes and E2E tests</li></ul>
+    </div>
+    <div class="part-card">
+      <span class="when">Day 2 · 10:00–13:00</span>
+      <h3>3 · Brownfield and the harness</h3>
+      <ul><li>Reverse engineering</li><li>Harness engineering, guides and sensors</li><li>Guardrails: ArchUnit, hooks, SonarQube</li><li>The Werkstatt: a software factory</li></ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Agenda</b><span>Part 2 · 180 minutes</span></div>
+  <h2>This afternoon</h2>
+  <div class="timeline dense">
+    <div class="t">14:00</div><div>Recap, where everybody stands</div><div class="d">5'</div>
+    <div class="t">14:05</div><div>From specification to code: architecture, stack file, layer skills</div><div class="d">15'</div>
+    <div class="t">14:20</div><div class="lab">Lab 5 · Implement the use case</div><div class="d">30'</div>
+    <div class="t">14:50</div><div>Testing a use case: the spec is the oracle</div><div class="d">10'</div>
+    <div class="t">15:00</div><div class="lab">Lab 6 · Tests and coverage</div><div class="d">20'</div>
+    <div class="t">15:20</div><div class="muted">Break</div><div class="d">20'</div>
+    <div class="t">15:40</div><div>When requirements change</div><div class="d">10'</div>
+    <div class="t">15:50</div><div class="lab">Lab 7 · Change a requirement</div><div class="d">20'</div>
+    <div class="t">16:10</div><div>From business process to end-to-end tests</div><div class="d">10'</div>
+    <div class="t">16:20</div><div class="lab">Lab 8 · Process, test cases, E2E test</div><div class="d">20'</div>
+    <div class="t">16:40</div><div>Token economy</div><div class="d">10'</div>
+    <div class="t">16:50</div><div>Wrap-up, outlook to day 2</div><div class="d">10'</div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Recap</b><span>14:02</span></div>
+  <h2>Where does everybody stand?</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>You should have</h3>
+      <ul>
+        <li><code>docs/requirements.md</code> and <code>docs/glossary.md</code></li>
+        <li><code>docs/use_cases.puml</code> and <code>docs/entity_model.md</code></li>
+        <li><code>docs/use_cases/UC-###-*.md</code> for searching available rooms</li>
+        <li>No blocking findings in <code>/spec-review</code></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Not there yet?</h3>
+      <ul>
+        <li>Run <code>/next</code>: it reads <code>docs/</code> and names the missing step</li>
+        <li>Pair with your neighbour for the first lab</li>
+        <li>Answer open questions now, before the agent writes code</li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker">This afternoon the agent writes the code. Your spec decides how good it is.</p>
+  <aside class="notes">Quick round: who has a UC with status Draft, who has run spec-review. Look at one participant's use case on the projector and point out one good and one weak business rule.</aside>
+</section>
+
+<!-- ============ SPEC TO CODE ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Construction</b><span>14:05</span></div>
+  <div class="num">05 · CONSTRUCTION</div>
+  <h2>From specification to code</h2>
+  <p>The what is written. Now the how.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Construction</b><span>14:05</span></div>
+  <h2>Separate the what from the how</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>What: stack independent</h3>
+      <ul>
+        <li>Vision, requirements, glossary</li>
+        <li>Use cases and business rules</li>
+        <li>Entity model (logical)</li>
+        <li>Test cases</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.5em">Written with the customer. This morning.</p>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>How: stack specific</h3>
+      <ul>
+        <li>Architecture: 4+1 views, ADRs</li>
+        <li><code>docs/architecture/stack.md</code></li>
+        <li>Skills and plugins for the stack</li>
+        <li>Coding guidelines, runtime constraints</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.5em">Written by the engineers. Prepared for you.</p>
+    </div>
+  </div>
+  <p class="kicker">One spec, many stacks: the specification stays, the harness and with it the architecture changes.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Construction</b><span>14:08</span></div>
+  <h2>Where the architecture comes from</h2>
+  <div class="step-list">
+    <div class="box"><span class="n">1</span><div><b>Starter project</b><p>Spring Boot 4, Vaadin 25, jOOQ, Flyway and H2 are set up. The agent does not choose the framework</p></div></div>
+    <div class="box"><span class="n">2</span><div><b>Stack file and layer plugins</b><p><code>stack.md</code> names a skill per layer. Each skill brings the structure: views, jOOQ repositories, records, migrations, test layers</p></div></div>
+    <div class="box"><span class="n">3</span><div><b>Existing code</b><p>The skills follow the patterns they find. The first use case sets the style for all others: review it carefully</p></div></div>
+    <div class="box" style="border-color:var(--accent)"><span class="n">4</span><div><b>ADRs and architecture rules</b><p>Decisions written down before the use case that needs them, and enforced by tests. Day 2</p></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Construction</b><span>14:11</span></div>
+  <h2>The stack file: executable architecture</h2>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Skill</th><th>Test skill</th></tr>
+    <tr><td>Migration</td><td>Flyway, H2</td><td><code>flyway-schema</code></td><td>–</td></tr>
+    <tr><td>Persistence</td><td>jOOQ</td><td><code>jooq-persistence</code></td><td><code>jooq-persistence-test</code></td></tr>
+    <tr><td>Service</td><td>Spring Boot 4</td><td><code>spring-service</code></td><td><code>spring-service-test</code></td></tr>
+    <tr class="hl"><td>UI</td><td>Vaadin Flow 25</td><td><code>vaadin-flow-ui</code></td><td><code>vaadin-flow-ui-test</code></td></tr>
+    <tr><td>E2E</td><td>Playwright, Drama Finder</td><td>–</td><td><code>vaadin-e2e-test</code></td></tr>
+  </table>
+  <ul style="margin-top:0.9em; font-size:0.88em">
+    <li><code>/use-case-implement</code> runs the skills bottom-up, <code>/use-case-test</code> from the integration layer up</li>
+    <li>Choosing a plugin is an architecture decision. <code>/stack</code> writes the file, or detects it in an existing project</li>
+    <li>Other stacks: Angular, Next.js, NestJS, Hilla, Blazor/.NET, JPA, Drizzle, REST clients</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Construction</b><span>14:14</span></div>
+  <h2>What <code>/use-case-implement</code> does</h2>
+  <div class="cols" style="grid-template-columns: 1.2fr 1fr">
+    <div class="step-list">
+      <div class="box"><span class="n">1</span><div>Checks the status of the use case<p>A draft is not built</p></div></div>
+      <div class="box"><span class="n">2</span><div>Reads exactly what the use case links<p>The spec, its FRs, the entity model, the stack file. No repository search</p></div></div>
+      <div class="box"><span class="n">3</span><div>Runs the layer skills bottom-up<p>Migration → persistence → service → UI</p></div></div>
+      <div class="box"><span class="n">4</span><div>Marks every rule in the code<p><code>// UC-003 BR-002:</code> above the check that enforces it</p></div></div>
+    </div>
+    <div class="box">
+      <h3>Rules every layer shares</h3>
+      <ul>
+        <li><b>No assumptions:</b> a gap in the spec becomes an entry in <code>docs/open_questions.md</code></li>
+        <li><b>Decision rights:</b> the agent does not decide business behavior</li>
+        <li><b>No edits to tests or docs</b> during implementation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Construction</b><span>14:17</span></div>
+  <h2>What keeps the agent on track</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Guides: before it acts</h3>
+      <ul>
+        <li>Your use case and the entity model</li>
+        <li>The stack file and the layer skills</li>
+        <li>MCP servers with current Vaadin and jOOQ docs</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Sensors: after it acts</h3>
+      <ul>
+        <li>Compiler and jOOQ code generation</li>
+        <li>Tests per flow and business rule</li>
+        <li>The coverage audit against the spec</li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker">Day 2 makes this systematic: harness engineering, ArchUnit, hooks, SonarQube.</p>
+</section>
+
+<!-- ============ LAB 5 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>14:20–14:50</span></div>
+    <button class="timer" data-minutes="30" type="button">30:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">5</span><h2 style="margin:0">Implement the use case</h2>
+  </div>
+  <div class="cmd">
+    <code>/use-case-implement UC-###</code>
+    <code class="alt">./mvnw spring-boot:run</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li>Migration in <code>src/main/resources/db/migration</code>: does it match the entity model?</li>
+        <li>Find the <code>UC-### BR-###</code> markers in the code</li>
+        <li>Open the view in the browser and try the main scenario</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>The application starts and the main scenario works</li>
+        <li>The agent recorded gaps in <code>docs/open_questions.md</code> instead of guessing</li>
+        <li><b>Bonus:</b> ask the agent which design decisions it made for you. Which belong in an ADR?</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Status must be at least Approved, or the skill asks. If the agent stops with an open question, that is a success: answer it in the use case and run again.</aside>
+</section>
+
+<!-- ============ TESTING ============ -->
+<section>
+  <div class="eyebrow"><b>Testing</b><span>14:50</span></div>
+  <h2>The spec is the test oracle</h2>
+  <div class="cols">
+    <ul>
+      <li><b>Tests come from the use case,</b> not from the code: one test per scenario, flow and business rule</li>
+      <li><b>A test that disagrees with the code stays red.</b> The agent does not bend the test to the code</li>
+      <li><b>Integration layer first:</b> a Browserless view test runs against the real service and database</li>
+      <li><b>Browser tests</b> for the journeys across use cases</li>
+    </ul>
+<pre><code>@UseCase(id = "UC-001",
+         scenario = "A2: no room available",
+         businessRules = {"BR-002"})
+@Test
+void showsMessageWhenNothingIsFree() {
+    // …
+}</code></pre>
+  </div>
+  <p class="small muted" style="margin-top:0.6em">The annotation makes the test traceable: requirement → use case → business rule → code → test.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Testing</b><span>14:55</span></div>
+  <h2>Spec coverage, not line coverage</h2>
+  <div class="cols" style="grid-template-columns: 1.3fr 1fr">
+    <table class="small">
+      <tr><th>Element</th><th>Code</th><th>Test</th></tr>
+      <tr><td>Step 1–4</td><td>RoomSearchView:42</td><td>✔</td></tr>
+      <tr><td>A1 Dates invalid</td><td>RoomSearchView:58</td><td>✔</td></tr>
+      <tr><td>A2 No room free</td><td>RoomService:33</td><td class="muted">Missing</td></tr>
+      <tr><td>BR-001 At least one night</td><td>RoomSearchView:61</td><td>✔</td></tr>
+      <tr class="hl"><td>BR-002 Max. 14 nights</td><td class="muted">Missing</td><td class="muted">Missing</td></tr>
+    </table>
+    <div class="box">
+      <ul>
+        <li><code>/use-case-coverage</code> starts a read-only subagent in a fresh context</li>
+        <li>It maps every step, flow and rule onto code and tests</li>
+        <li>It reports drift: code no spec asks for</li>
+        <li>It suggests the next status: <i>Implemented</i>, <i>Tested</i></li>
+      </ul>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:0.6em">An inferential sensor: slower than a test, but it reads the spec. Example matrix, yours will differ.</p>
+</section>
+
+<!-- ============ LAB 6 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>15:00–15:20</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">6</span><h2 style="margin:0">Tests and coverage</h2>
+  </div>
+  <div class="cmd">
+    <code>/use-case-test UC-###</code>
+    <code class="alt">./mvnw verify</code>
+    <code>/use-case-coverage UC-###</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li>Browserless test <code>UC###…Test</code> in <code>src/test/java</code></li>
+        <li>Does every test carry <code>@UseCase</code> with flow and rule?</li>
+        <li>The coverage matrix: which step, flow or rule has no code or no test?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>The tests are green and the gaps are closed or explained</li>
+        <li>You noted the tokens for this use case, spec to test</li>
+        <li><b>Bonus:</b> <code>/use-case-coverage UC-### html</code> and open the report in <code>docs/coverage</code></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BREAK ============ -->
+<section class="divider">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Break</b><span>15:20–15:40</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div class="num">BREAK</div>
+  <h2>20 minutes</h2>
+  <p>Commit spec, code and tests before you leave.</p>
+</section>
+
+<!-- ============ CHANGE ============ -->
+<section>
+  <div class="eyebrow"><b>Change</b><span>15:40</span></div>
+  <h2>When requirements change</h2>
+  <ul>
+    <li><b>Change the spec first:</b> the use case or the business rule, not the code</li>
+    <li><b>Update the code from the spec,</b> do not hand-patch</li>
+    <li><b>Let the tests show the impact:</b> failing tests point to code that no longer matches</li>
+    <li><b>Review spec and code together:</b> one pull request with both diffs</li>
+    <li><b>Check the coverage again:</b> where do code and spec drift apart?</li>
+  </ul>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Change</b><span>15:43</span></div>
+  <h2>Before or after implementation?</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Change before implementation</h3>
+      <p class="muted small">The use case is specified, no code exists yet.</p>
+      <div class="chain small" style="margin:0.4em 0 0.6em"><code>/requirements</code><span class="arr">→</span><code>/spec-review</code><span class="arr">→</span><code>/use-case-spec</code><span class="arr">→</span><code>/spec-review</code></div>
+      <ul>
+        <li>Update the FR first, then the use cases that realize it</li>
+        <li><code>/spec-review</code> impact analysis: <i>“what does FR-014 affect?”</i></li>
+        <li>Cheapest moment for a change: only text moves</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Correction after implementation</h3>
+      <p class="muted small">Code and tests exist. The behavior is wrong or the rule changed.</p>
+      <div class="chain small" style="margin:0.4em 0 0.6em"><code>/use-case-spec</code><span class="arr">→</span><code>/use-case-implement</code><span class="arr">→</span><code>/use-case-test</code><span class="arr">→</span><code>/use-case-coverage</code></div>
+      <ul>
+        <li>Correct the use case first, never only the code</li>
+        <li>Failing tests show where code no longer matches</li>
+        <li>Coverage check proves spec and code match again</li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker" style="font-size:0.85em">Lab 7 is the right-hand case.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Change</b><span>15:46</span></div>
+  <h2>New feature or correction?</h2>
+  <table>
+    <tr><th>The request</th><th>What it becomes</th><th>Skills</th></tr>
+    <tr><td>A <b>new user goal</b><br><span class="muted small">“Guests can leave a review after checkout”</span></td><td>A new use case with a new UC id, traced to a new FR</td><td><div class="chain"><code>/requirements</code><span class="arr">→</span><code>/use-case-diagram</code><span class="arr">→</span><code>/use-case-spec</code><span class="arr">→</span> …</div></td></tr>
+    <tr><td>A <b>new way to reach an existing goal</b><br><span class="muted small">“Reserve by phone through the receptionist”</span></td><td>A new alternative flow, e.g. <code>3a</code>, in the existing use case</td><td><div class="chain"><code>/use-case-spec UC-###</code><span class="arr">→</span><code>/use-case-implement</code><span class="arr">→</span> …</div></td></tr>
+    <tr><td>The <b>system does it wrong</b><br><span class="muted small">“A stay is at most 14 nights”</span></td><td>A corrected step or business rule. Same UC, same id</td><td><div class="chain"><code>/use-case-spec UC-###</code><span class="arr">→</span><code>/use-case-implement</code><span class="arr">→</span> …</div></td></tr>
+  </table>
+  <p class="small" style="margin-top:0.8em"><b>Rule of thumb:</b> if the actor's goal changes, it is a new use case. If only the path or a rule changes, edit the existing one. Existing tests stay green for a feature and fail first for a correction.</p>
+</section>
+
+<!-- ============ LAB 7 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>15:50–16:10</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">7</span><h2 style="margin:0">Change a requirement</h2>
+  </div>
+  <p class="small" style="margin:0 0 0.2em">The hotel owners: <b>“A stay is at most 14 nights.”</b> Change the use case first.</p>
+  <div class="cmd" style="grid-template-columns: auto auto; justify-content: start; column-gap: 0.6em">
+    <code>/use-case-spec UC-###</code>
+    <code>/spec-review UC-###</code>
+    <code>/use-case-implement UC-###</code>
+    <code>/use-case-test UC-###</code>
+    <code>/use-case-coverage UC-###</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li>The spec diff: a new or changed <code>BR-###</code></li>
+        <li>Which tests failed before the code was updated?</li>
+        <li>Did the agent touch more than the rule needs?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>Spec, code and tests change in one commit</li>
+        <li>The coverage matrix shows the new rule with code and test</li>
+        <li><b>Bonus:</b> add the phone reservation as an alternative flow</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS TO E2E ============ -->
+<section>
+  <div class="eyebrow"><b>End-to-end</b><span>16:10</span></div>
+  <h2>From business process to test cases</h2>
+  <div class="cols" style="grid-template-columns: 1.1fr 1fr">
+<div class="uc"><span class="h">BP-001 Hotel stay</span>   lanes: Guest · Receptionist
+
+UC-002 Reserve Room
+ └─ Guest cancels?
+     yes → UC-007 Cancel → ● cancelled
+     no  → UC-004 Check In
+           → UC-005 Check Out → ● completed
+
+<span class="h">/test-case BP-001</span>
+TC-001 stay-completed.md
+   Reserve → cancels? no → Check In → Check Out
+TC-002 reservation-cancelled.md
+   Reserve → cancels? yes → Cancel</div>
+    <div>
+      <ul class="small">
+        <li><b>A process connects use cases</b> across roles: one lane per actor, every activity a use case</li>
+        <li><b>One test case per path</b> from the start event to an end event</li>
+        <li><b>The test data forces</b> every gateway decision</li>
+        <li><b>One Playwright test per test case:</b> <code>TC001StayCompletedIT</code></li>
+      </ul>
+      <p class="kicker" style="font-size:0.85em">Use case tests check one goal. Test cases check the journey.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>End-to-end</b><span>16:15</span></div>
+  <h2>Three skills, three artifacts</h2>
+  <div class="step-list">
+    <div class="box"><span class="n">1</span><div><code>/business-process</code><p><code>docs/processes/BP-###-*.bpmn</code>. Opens in any BPMN modeler, e.g. demo.bpmn.io. <code>/spec-review</code> reports activities without a use case</p></div></div>
+    <div class="box"><span class="n">2</span><div><code>/test-case BP-###</code><p><code>docs/test_cases/TC-###-*.md</code>, one per path. Run again after a process change: removed paths become <i>Obsolete</i></p></div></div>
+    <div class="box"><span class="n">3</span><div><code>/test-case-implement TC-###</code><p>A Playwright <code>TC###…IT</code> with Drama Finder, run by <code>./mvnw verify</code>. <code>/test-case-coverage</code> audits it</p></div></div>
+  </div>
+</section>
+
+<!-- ============ LAB 8 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>16:20–16:40</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">8</span><h2 style="margin:0">Choose your track</h2>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Track A · End-to-end</h3>
+      <div class="cmd">
+        <code>/business-process</code>
+        <code>/test-case BP-###</code>
+        <code>/test-case-implement TC-###</code>
+      </div>
+      <ul>
+        <li>One lane per role, every activity a use case</li>
+        <li>Done when one <code>TC###…IT</code> runs in <code>./mvnw verify</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Track B · Second use case</h3>
+      <div class="cmd">
+        <code>/use-case-spec UC-###</code>
+        <code>/use-case-implement UC-###</code>
+        <code>/use-case-test UC-###</code>
+      </div>
+      <ul>
+        <li>Reserve a room, building on the search</li>
+        <li>Done when the coverage matrix is closed. Compare the tokens with your first use case</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Track A needs use cases that are implemented for the test to pass; with only the search implemented, the IT stays partially red. That is fine: it shows what is missing. Track B shows the cost falling for the second use case.</aside>
+</section>
+
+<!-- ============ TOKENS ============ -->
+<section>
+  <div class="eyebrow"><b>Token economy</b><span>16:40</span></div>
+  <h2>Input tokens drive the cost</h2>
+  <div class="cols">
+    <div>
+      <p class="small">Context per turn × number of turns. The whole history is sent again with every turn, and letting the agent search the repository burns tokens fast. Output is the small part.</p>
+      <h3 style="margin-top:0.8em">Measure cost per use case</h3>
+      <p class="small">Take a baseline from spec to test. It should fall as specs and structure improve. <b>What are your numbers from today?</b></p>
+    </div>
+    <div class="box">
+      <h3>Levers</h3>
+      <ul>
+        <li>One use case per session, then close it</li>
+        <li>Point to files instead of letting it search</li>
+        <li>Keep specs short and focused</li>
+        <li>Keep the prompt cache: do not switch model or MCPs mid-session</li>
+        <li>Cheap models for boilerplate, strong models for design and review</li>
+        <li>Subagents keep the main context clean</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Token economy</b><span>16:45</span></div>
+  <h2>Subscription or API?</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Subscription seats</h3>
+      <ul>
+        <li>Predictable cost, good for daily development work</li>
+        <li>What you used today</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>API billing</h3>
+      <ul>
+        <li>Pay per token, needed for automation and pipelines</li>
+        <li>The Werkstatt on day 2 runs on API keys, with a budget per use case</li>
+      </ul>
+    </div>
+  </div>
+  <ul style="margin-top:0.9em" class="small">
+    <li><b>Who pays:</b> the customer can provide the keys, which also helps with data protection</li>
+    <li><b>Set a budget:</b> cost per developer per month is easier to defend than cost per prompt</li>
+  </ul>
+</section>
+
+<!-- ============ WRAP-UP ============ -->
+<section>
+  <div class="eyebrow"><b>Wrap-up</b><span>16:50</span></div>
+  <h2>What you built today</h2>
+  <div class="cols">
+    <ul>
+      <li>From a three-line vision to a tested use case</li>
+      <li>Every business rule traced: FR → UC → BR → code → test</li>
+      <li>A change that started in the spec, not in the code</li>
+      <li>A cost per use case you can compare</li>
+    </ul>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Tomorrow, 10:00</h3>
+      <ul>
+        <li>Reverse engineering an existing system</li>
+        <li>Harness engineering: guides and sensors</li>
+        <li>ArchUnit, hooks, SonarQube in the PetClinic</li>
+        <li>The Werkstatt: from approved use case to pull request</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.5em">Prepare: <code>git clone -b h2 github.com/AI-Unified-Process/petclinic</code> and <code>./mvnw verify</code> once. No Docker needed. Want to work on your own project? Bring it, and check that you may use it with an AI agent.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="deck.js"></script>
+</body>
+</html>

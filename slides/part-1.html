@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec-Driven Development · Part 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="reveal.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ OPENING ============ -->
+<section class="title-slide">
+  <a class="logo" href="https://martinelli.ch" target="_blank" rel="noopener" aria-label="Martinelli GmbH"></a>
+  <span class="tag">Part 1 of 3 · Day 1 · 10:00–13:00</span>
+  <h1>From vision to use cases</h1>
+  <p class="contact-name">Spec-Driven Development with the AI Unified Process · Simon Martinelli</p>
+  <dl class="contacts">
+    <dt>Web</dt><dd><a href="https://martinelli.ch" target="_blank" rel="noopener">martinelli.ch</a></dd>
+    <dt>AI Unified Process</dt><dd><a href="https://unifiedprocess.ai" target="_blank" rel="noopener">unifiedprocess.ai</a></dd>
+    <dt>Lab</dt><dd><a href="https://github.com/martinelli-workshops/sdd-lab" target="_blank" rel="noopener">github.com/martinelli-workshops/sdd-lab</a></dd>
+  </dl>
+  <aside class="notes">Welcome. Ask: who has the Codespace running already? Start it now if not, it takes a few minutes.</aside>
+</section>
+
+<section>
+  <div class="eyebrow"><b>About me</b><span>10:00</span></div>
+  <h2>Simon Martinelli</h2>
+  <div class="about">
+    <div>
+      <ul class="facts">
+        <li><b>&gt;30 years</b> in software engineering</li>
+        <li><b>&gt;25 years</b> with Java</li>
+        <li><b>Self-employed</b> since 2009</li>
+        <li><b>Teaching</b> at four universities</li>
+        <li><b>Co-lead</b> JUG Switzerland, Berne</li>
+      </ul>
+      <div class="badges">
+        <img src="badge-java-champion.png" alt="Java Champion">
+        <img src="badge-vaadin-champion.png" alt="Vaadin Champion">
+        <img src="badge-oracle-ace-pro.png" alt="Oracle ACE Pro">
+      </div>
+    </div>
+    <div class="books">
+      <figure>
+        <a href="https://link.springer.com/book/10.1007/979-8-8688-2851-5" target="_blank" rel="noopener"><img src="book-spec-driven-development.webp" alt="Book cover: Spec-Driven Development: From Specs to Code with AI Agents by Simon Martinelli"></a>
+        <figcaption><b>Spec-Driven Development</b><br>Apress, 2026<br>20% off: <code>APAUT</code></figcaption>
+      </figure>
+      <figure>
+        <a href="https://leanpub.com/writing-use-cases-for-ai" target="_blank" rel="noopener"><img src="guide-writing-use-cases-for-ai.webp" alt="Guide cover: Writing Use Cases for AI by Simon Martinelli"></a>
+        <figcaption><b>Writing Use Cases for AI</b><br>Free on Leanpub</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Before we start</b><span>10:03</span></div>
+  <h2>Start your environment now</h2>
+  <p class="small muted">Choose one. Both work equally well.</p>
+  <div class="cols">
+    <div class="box">
+      <h3>Codespaces</h3>
+      <ul>
+        <li>Open <code>github.com/martinelli-workshops/sdd-lab</code></li>
+        <li><b>Code → Codespaces → Create codespace on main</b></li>
+        <li>Java, Maven, the AI Unified Process plugins and Playwright are installed for you</li>
+        <li>You work on your own branch <code>workshop/&lt;github-user&gt;</code></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Local</h3>
+      <ul>
+        <li>JDK 25 and Claude Code (Copilot CLI or Codex also work)</li>
+        <li><code>git clone</code> the repository</li>
+        <li>Open <code>claude</code> in the project and accept the plugins it offers, or install them:</li>
+      </ul>
+      <pre style="font-size:0.57em"><code>/plugin marketplace add ai-unified-process/marketplace
+/plugin install aiup-core@ai-unified-process-marketplace
+/plugin install aiup-flyway@ai-unified-process-marketplace
+/plugin install aiup-jooq@ai-unified-process-marketplace
+/plugin install aiup-spring-boot@ai-unified-process-marketplace
+/plugin install aiup-vaadin@ai-unified-process-marketplace</code></pre>
+      <ul>
+        <li>Check: <code>./mvnw spring-boot:run</code></li>
+      </ul>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:1em">The setup runs in the background while we talk. The first lab starts at 11:00.</p>
+</section>
+
+<section class="overview-slide">
+  <div class="eyebrow"><b>The workshop</b><span>Two days · three parts</span></div>
+  <h2>One system, from vision to the software factory</h2>
+  <div class="parts">
+    <div class="part-card now">
+      <span class="when">Day 1 · 10:00–13:00</span>
+      <h3>1 · From vision to use cases</h3>
+      <ul><li>Why spec-driven, choosing a method</li><li>AI Unified Process, the agent</li><li>Requirements, use case diagram, entity model</li><li>Use case specification, spec review</li></ul>
+    </div>
+    <div class="part-card">
+      <span class="when">Day 1 · 14:00–17:00</span>
+      <h3>2 · From use cases to code and tests</h3>
+      <ul><li>The stack file, layer skills</li><li>Implement, test, coverage</li><li>Changing requirements</li><li>Business processes and E2E tests</li></ul>
+    </div>
+    <div class="part-card">
+      <span class="when">Day 2 · 10:00–13:00</span>
+      <h3>3 · Brownfield and the harness</h3>
+      <ul><li>Reverse engineering</li><li>Harness engineering, guides and sensors</li><li>Guardrails: ArchUnit, hooks, SonarQube</li><li>The Werkstatt: a software factory</li></ul>
+    </div>
+  </div>
+  <p class="kicker">Theory in small doses, then build. Every part has four labs.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Agenda</b><span>Part 1 · 180 minutes</span></div>
+  <h2>Today, until lunch</h2>
+  <div class="timeline dense">
+    <div class="t">10:00</div><div>Welcome, start your environment</div><div class="d">10'</div>
+    <div class="t">10:10</div><div>Why spec-driven? Choosing a method</div><div class="d">20'</div>
+    <div class="t">10:30</div><div>AI Unified Process at a glance</div><div class="d">15'</div>
+    <div class="t">10:45</div><div>The agent: Claude Code and security</div><div class="d">10'</div>
+    <div class="t">10:55</div><div>The project: a hotel with ten rooms</div><div class="d">5'</div>
+    <div class="t">11:00</div><div class="lab">Lab 1 · From vision to requirements</div><div class="d">20'</div>
+    <div class="t">11:20</div><div class="muted">Break</div><div class="d">20'</div>
+    <div class="t">11:40</div><div>Why use cases? Levels, behavior, stakeholders</div><div class="d">15'</div>
+    <div class="t">11:55</div><div class="lab">Lab 2 · Use case diagram and entity model</div><div class="d">20'</div>
+    <div class="t">12:15</div><div>What makes a use case good for an agent</div><div class="d">5'</div>
+    <div class="t">12:20</div><div class="lab">Lab 3 · Specify one use case</div><div class="d">20'</div>
+    <div class="t">12:40</div><div class="lab">Lab 4 · Review the specification</div><div class="d">10'</div>
+    <div class="t">12:50</div><div>Ready for implementation? Wrap-up</div><div class="d">10'</div>
+  </div>
+</section>
+
+<!-- ============ FOUNDATIONS ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Foundations</b><span>10:10</span></div>
+  <div class="num">01 · FOUNDATIONS</div>
+  <h2>Why spec-driven?</h2>
+  <p>Start with the specification, not with the code.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Foundations</b><span>10:10</span></div>
+  <h2>Spec-Driven Development</h2>
+  <ul>
+    <li>Specifications define the <b>intended behavior</b> of the system</li>
+    <li>They are the shared contract between business and development</li>
+    <li>They reduce guesswork for humans and for the agent</li>
+  </ul>
+  <p class="kicker" style="margin-top:0.9em">Three levels of spec-driven development</p>
+  <div class="cols3" style="margin-top:0.4em">
+    <div class="box"><h3>Spec-first</h3>Written before the code, thrown away after the feature.</div>
+    <div class="box" style="border-color:var(--accent)"><h3>Spec-anchored</h3>Stays in the repository. Spec and code change together. <b>This is what we do in this workshop.</b></div>
+    <div class="box"><h3>Spec-as-source</h3>Humans only edit the spec. Code is always regenerated.</div>
+  </div>
+  <div class="source">Source: <a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" rel="noopener">Birgitta Böckeler, Understanding Spec-Driven Development</a></div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Foundations</b><span>10:13</span></div>
+  <h2>AI is not a compiler</h2>
+  <div class="cols">
+    <div>
+      <p>Many developers expect: precise input, perfect output.</p>
+      <ul>
+        <li>The agent is non-deterministic</li>
+        <li>It makes plausible mistakes</li>
+        <li>It is not model-driven development</li>
+      </ul>
+      <p class="kicker">You are responsible for the output.</p>
+    </div>
+    <div>
+      <table>
+        <tr><th>Before</th><th>Now</th></tr>
+        <tr><td>Writes every line</td><td>Writes specs, reviews code</td></tr>
+        <tr><td>Follows a ticket</td><td>Owns architecture and quality</td></tr>
+        <tr><td>Knowledge in the head</td><td>Knowledge in the repository</td></tr>
+        <tr><td>Uses the IDE</td><td>Builds and tunes the harness</td></tr>
+        <tr><td>Gives rigid commands</td><td>Sets goals, context and feedback loops</td></tr>
+      </table>
+      <p class="small muted" style="margin-top:0.6em">The developer does not disappear. The work moves up one level.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Foundations</b><span>10:16</span></div>
+  <h2>Steps of AI adoption</h2>
+  <div class="step-list">
+    <div class="box"><span class="n">0</span><div><b>Gated</b><p>Only older models approved, access to AI tools is gated and process-heavy</p></div></div>
+    <div class="box"><span class="n">1</span><div><b>Assisted</b><p>You and one agent as a pair. You review almost every change</p></div></div>
+    <div class="box" style="border-color:var(--accent)"><span class="n">2</span><div><b>Parallel</b><p>You orchestrate several agents. The agent checks its own work against specs and sensors</p></div></div>
+    <div class="box"><span class="n">3</span><div><b>Supervised autonomy</b><p>Pipelines of agents write nearly all the code. Humans own specs, architecture and review</p></div></div>
+    <div class="box"><span class="n">4</span><div><b>AI-native</b><p>Steering by intent. The organization is built around agents</p></div></div>
+  </div>
+  <p class="small muted" style="margin-top:0.6em">Today and this afternoon: step 1 to 2. Day 2 ends with step 3, the Werkstatt.</p>
+  <aside class="notes">Ask the room: where is your team today? Most are at 0 or 1. The jump from 1 to 2 needs specs and sensors, not a better model.</aside>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Choosing a method</b><span>10:19</span></div>
+  <h2>How to choose</h2>
+  <div class="cols">
+    <ul>
+      <li><b>Greenfield or brownfield:</b> brownfield needs existing code as context and more structure</li>
+      <li><b>Lifetime:</b> a prototype needs less process than a system that lives ten years</li>
+      <li><b>Regulation and audit:</b> traceability from requirement to code can be mandatory</li>
+    </ul>
+    <ul>
+      <li><b>Team size and maturity:</b> more people need more shared artifacts</li>
+      <li><b>Size of the context:</b> large monoliths break every method that reads the whole code</li>
+      <li><b>Tools change every few weeks:</b> choose the method first, then the tool</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Choosing a method</b><span>10:22</span></div>
+  <h2>Five frameworks at a glance</h2>
+  <table>
+    <tr><th>Framework</th><th>Core idea</th><th>Sweet spot</th></tr>
+    <tr><td>OpenSpec</td><td>Change proposals on top of living specs</td><td>Changes in existing code, lightweight</td></tr>
+    <tr><td>BMAD</td><td>A team of agent personas</td><td>Greenfield, agile flow with AI roles</td></tr>
+    <tr><td>GitHub Spec Kit</td><td>Constitution → specify → plan → tasks</td><td>Greenfield features, any agent</td></tr>
+    <tr><td>Kiro (AWS)</td><td>Spec-centric IDE with steering and hooks</td><td>One developer, one tool</td></tr>
+    <tr class="hl"><td>AI Unified Process</td><td>Iterative process based on use cases</td><td>Enterprise, brownfield, long-lived systems</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:0.8em">Not the same category: a process (AI Unified Process), an agent-team method (BMAD), workflow toolkits (OpenSpec, Spec Kit), a spec-centric IDE (Kiro). Check current versions.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Choosing a method</b><span>10:25</span></div>
+  <h2>Describe the system, or describe the change?</h2>
+  <table>
+    <tr><th></th><th>AI Unified Process</th><th>OpenSpec</th></tr>
+    <tr><td><b>What it is</b></td><td>A process: phases, roles, review gates, plus the skills</td><td>A lightweight toolkit and workflow</td></tr>
+    <tr><td><b>Unit of work</b></td><td>The use case: one user goal, from spec to tested code</td><td>The change: a proposal with tasks and spec deltas</td></tr>
+    <tr><td><b>Central artifacts</b></td><td>Requirements, entity model, use case specifications</td><td>Proposal, tasks, design, specs per capability</td></tr>
+    <tr class="hl"><td><b>Source of truth</b></td><td>The use cases, for the whole lifetime of the system. A change edits the use case; git keeps the history</td><td>The specs folder, updated when a change is archived. The reasoning lives in the change history</td></tr>
+    <tr><td><b>Sweet spot</b></td><td>Brownfield, modernization, long-lived and regulated systems, several teams</td><td>Incremental changes, small teams, quick start</td></tr>
+  </table>
+  <p class="kicker" style="font-size:0.85em">Ask: in five years, where does a new team member read what the system does?</p>
+</section>
+
+<!-- ============ AI UNIFIED PROCESS ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>AI Unified Process</b><span>10:30</span></div>
+  <div class="num">02 · THE PROCESS</div>
+  <h2>AI Unified Process</h2>
+  <p>Iterative, use case driven, one skill per step.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>AI Unified Process</b><span>10:30</span></div>
+  <h2>AI Unified Process at a glance</h2>
+  <div class="diagram"><img src="aiup-workflow.svg" style="max-height:none; width:100%" alt="The skills of the AI Unified Process by phase: /requirements in Inception; /entity-model, /use-case-diagram, the optional /business-process, and /stack in Elaboration; /use-case-spec, /use-case-implement, /use-case-test, /use-case-coverage, /test-case and /test-case-implement in Construction; /acceptance-protocol, /user-guide and /release-notes in Transition. /spec-review, /next, /open-questions and /reverse-engineer run at any point."></div>
+  <aside class="notes">
+    Iterative: one use case at a time, from spec to tested code.
+    Every step is a skill with a template, so the output has the same structure every time.
+    Traceable: requirement → use case → business rule → code → test.
+    This morning: Inception and Elaboration. This afternoon: Construction.
+  </aside>
+  <div class="source"><a href="https://unifiedprocess.ai" target="_blank" rel="noopener">unifiedprocess.ai</a></div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>AI Unified Process</b><span>10:34</span></div>
+  <h2>Greenfield workflow</h2>
+  <div class="diagram"><img src="greenfield.png" style="max-height:330px" alt="The requirements engineer creates use cases and the entity model. The AI agent reads them, using skills, MCP and guidelines, and generates code and tests. The software engineer reviews the use case, the code and the tests."></div>
+  <div class="diagram-note">
+    <div><b>Humans write the spec</b>The requirements engineer creates use cases and the entity model, with the agent as a writing partner.</div>
+    <div><b>The agent builds</b>It reads the spec and generates code and tests, steered by skills, MCP and guidelines.</div>
+    <div><b>Humans review</b>The software engineer reviews code and tests against the use case.</div>
+  </div>
+  <aside class="notes">This is what we do today. Brownfield, the reverse direction, is the start of day 2.</aside>
+</section>
+
+<section class="flows">
+  <div class="eyebrow"><b>AI Unified Process</b><span>10:38</span></div>
+  <h2>Five scenarios, one set of skills</h2>
+  <table>
+    <tr><th>Scenario</th><th>Skills in order</th><th>Gate before the next step</th></tr>
+    <tr><td>Greenfield<span>no code yet</span></td><td><div class="chain"><code>/requirements</code><span class="arr">→</span><code>/use-case-diagram</code><span class="arr">→</span><code>/entity-model</code><span class="arr">→</span><code>/stack</code><span class="arr">→</span><code>/use-case-spec</code><span class="arr">→</span><code>/spec-review</code><span class="arr">→</span><code>/use-case-implement</code><span class="arr">→</span><code>/use-case-test</code><span class="arr">→</span><code>/use-case-coverage</code></div></td><td>Spec signed, no blocking findings, coverage closed</td></tr>
+    <tr><td>Change<span>before implementation</span></td><td><div class="chain"><code>/requirements</code><span class="arr">→</span><code>/spec-review</code> impact<span class="arr">→</span><code>/use-case-spec</code> affected UCs<span class="arr">→</span><code>/spec-review</code></div></td><td>Impact known, every affected UC updated</td></tr>
+    <tr><td>Correction<span>after implementation</span></td><td><div class="chain"><code>/use-case-spec</code><span class="arr">→</span><code>/spec-review</code><span class="arr">→</span><code>/use-case-implement</code><span class="arr">→</span><code>/use-case-test</code><span class="arr">→</span><code>/use-case-coverage</code></div></td><td>Code and spec match again</td></tr>
+    <tr><td>New feature<span>new goal or new path</span></td><td><div class="chain"><code>/requirements</code><span class="arr">→</span><code>/use-case-diagram</code><span class="arr">→</span><code class="opt">/entity-model</code><span class="arr">→</span><code>/use-case-spec</code><span class="arr">→</span> … same as greenfield</div></td><td>New UC or new flow, traced to its FR</td></tr>
+    <tr><td>Brownfield<span>existing code</span></td><td><div class="chain"><code>/stack</code><span class="arr">→</span><code>/reverse-engineer</code> per module<span class="arr">→</span>human review<span class="arr">→</span><code>/open-questions</code><span class="arr">→</span><code>/spec-review</code><span class="arr">→</span> then the rows above</div></td><td>Specs reviewed: they describe what it <i>should</i> do</td></tr>
+  </table>
+  <p class="small muted" style="margin-top:0.6em">Not sure what comes next? <code>/next</code> reads the state of <code>docs/</code> and names the next skill.</p>
+  <aside class="notes">
+    The map for both days. Part 1: the specification half of the greenfield row. Part 2: the construction half, plus change and correction. Part 3: brownfield.
+  </aside>
+</section>
+
+<section>
+  <div class="eyebrow"><b>AI Unified Process</b><span>10:42</span></div>
+  <h2>One spec for the whole lifecycle</h2>
+  <div class="cols" style="grid-template-columns: 1.2fr 1fr">
+    <table>
+      <tr><th>Phase</th><th>The use case is …</th></tr>
+      <tr><td>Pre-sales</td><td>Scope and estimate</td></tr>
+      <tr><td>Implement</td><td>Input for the agent</td></tr>
+      <tr><td>Test</td><td>Source for the test cases</td></tr>
+      <tr><td>Operation</td><td>Reference for support</td></tr>
+      <tr class="hl"><td>Change</td><td>Updated first, then the code</td></tr>
+    </table>
+    <div class="box">
+      <ul>
+        <li><b>Spec-anchored:</b> the spec lives in the repository next to the code</li>
+        <li><b>One owner per spec,</b> otherwise it drifts away from the code</li>
+        <li><b>Status per use case:</b> Draft, Reviewed, Approved, Implemented, Tested, Done</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE AGENT ============ -->
+<section>
+  <div class="eyebrow"><b>The agent</b><span>10:45</span></div>
+  <h2>Claude Code</h2>
+  <div class="cols">
+    <ul>
+      <li>Terminal-based coding agent</li>
+      <li>Also in the Claude app, on claude.ai, in JetBrains and VS Code</li>
+      <li>GitHub and GitLab integration, headless with <code>claude -p</code></li>
+      <li>Copilot CLI and Codex work with the same plugins</li>
+    </ul>
+    <div class="box">
+      <h3>Building blocks we use</h3>
+      <ul>
+        <li><b>Skills:</b> the AI Unified Process steps, as slash commands</li>
+        <li><b>Plugins:</b> bundles of skills, agents, MCP servers, hooks</li>
+        <li><b>Subagents:</b> own context window, e.g. the coverage auditor</li>
+        <li><b>MCP:</b> Vaadin docs, jOOQ docs, Playwright</li>
+        <li><b>Hooks:</b> day 2</li>
+      </ul>
+    </div>
+  </div>
+  <div class="source"><a href="https://code.claude.com/docs" target="_blank" rel="noopener">code.claude.com/docs</a></div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>The agent</b><span>10:48</span></div>
+  <h2>Security: sandbox is a soft boundary</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Built into Claude Code</h3>
+      <ul>
+        <li>Filesystem restrictions: limit accessible folders</li>
+        <li>Network controls: allow or deny outbound access</li>
+        <li>Permission system: asks before critical actions</li>
+        <li>Policies per project in <code>.claude/settings.json</code></li>
+      </ul>
+      <p class="small muted" style="margin-top:0.5em">It can be relaxed with approval. Not full isolation.</p>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Real isolation</h3>
+      <ul>
+        <li><b>Codespace or dev container:</b> what we use today</li>
+        <li><b>VM:</b> a cloud machine, connected with Remote Control</li>
+        <li><b>Container sandbox:</b> separate filesystem and runtime, reset anytime</li>
+      </ul>
+      <p class="small" style="margin-top:0.5em">Needed for autonomous runs: the Werkstatt on day 2 runs on a throwaway CI runner.</p>
+    </div>
+  </div>
+  <p class="kicker" style="font-size:0.85em">No production data, no secrets in the repository, minimal permissions.</p>
+</section>
+
+<!-- ============ THE PROJECT ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>The project</b><span>10:55</span></div>
+  <div class="num">03 · THE PROJECT</div>
+  <h2>A hotel with ten rooms</h2>
+  <p>HRS, the hotel reservation system we build in parts 1 and 2.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>The project</b><span>10:56</span></div>
+  <h2>What is already in the repository</h2>
+  <div class="cols">
+    <div>
+      <p class="big-quote" style="font-size:1.05em">“We are the proud owners of a small, ten-room hotel. We need a system to manage reservations, guest check-in/check-out, and room cleaning.”</p>
+      <p class="small muted">Actors: Guest · Receptionist · Manager · Housekeeping</p>
+    </div>
+    <div class="box">
+      <ul>
+        <li><code>docs/vision.md</code> the vision. <b>That is all the spec there is.</b></li>
+        <li><code>docs/architecture/stack.md</code> which skill builds and tests each layer (part 2)</li>
+        <li>An empty Spring Boot 4 application with Vaadin 25, jOOQ, Flyway, H2, Browserless and Playwright</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Labs</b><span>10:58</span></div>
+  <h2>How to work in the labs</h2>
+  <ul>
+    <li>You are the <b>requirements engineer</b>. The hotel owners are in the room: ask me</li>
+    <li>Read what the agent writes. Review is the job, not a formality</li>
+    <li>When the agent asks a question, answer it. Do not let it guess</li>
+    <li>Commit after every lab: <code>git add docs &amp;&amp; git commit</code></li>
+    <li>Note your token usage after each lab (<code>/usage</code> or <code>/context</code>)</li>
+  </ul>
+  <p class="small muted" style="margin-top:1em">Faster than the others? Every lab has a bonus task.</p>
+</section>
+
+<!-- ============ LAB 1 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>11:00–11:20</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">1</span><h2 style="margin:0">From vision to requirements</h2>
+  </div>
+  <div class="cmd">
+    <code>/requirements</code>
+    <code class="alt">Read docs/vision.md first</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li><code>docs/requirements.md</code>: FRs as user stories, NFRs measurable, constraints</li>
+        <li><code>docs/glossary.md</code>: one term per concept, no synonyms</li>
+        <li>Is anything in there that the vision does not say? Who decided it?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>Every actor of the vision has functional requirements</li>
+        <li>You find the FR for <b>searching available rooms</b></li>
+        <li>Every NFR has a number you can test: no <i>fast</i>, no <i>user-friendly</i></li>
+        <li><b>Bonus:</b> add one constraint each for runtime, monitoring and testing</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">The skill asks questions first. Play the hotel owner: 10 rooms, single and double, cancellation up to 24 h before arrival, check-in from 14:00, check-out until 11:00. Keep answers consistent across the room.</aside>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Requirements</b><span>Lab 1 review</span></div>
+  <h2>Example: requirements and constraints</h2>
+  <div class="cols">
+<pre><code>| ID      | Requirement                      |
+|---------|----------------------------------|
+| FR-001  | Guests can search online for     |
+|         | available rooms                  |
+| FR-002  | Guests can reserve rooms online  |
+| FR-003  | Receptionists can check guests in|
+| NFR-001 | Search answers in under 2 s      |
+|         | for 95 % of the requests         |</code></pre>
+<pre><code>| ID    | Constraint                       |
+|-------|----------------------------------|
+| C-001 | Runs on the hotel's Kubernetes   |
+| C-002 | Prices only from the price list  |
+|       | system                           |
+| C-003 | JSON logs with a correlation id  |
+| C-004 | Every use case has a browser test|</code></pre>
+  </div>
+  <p class="small muted">Constraints are input for the agent, not paperwork. Day 2 turns some of them into guardrails.</p>
+</section>
+
+<!-- ============ BREAK ============ -->
+<section class="divider">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Break</b><span>11:20–11:40</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div class="num">BREAK</div>
+  <h2>20 minutes</h2>
+  <p>Commit your requirements before you leave.</p>
+</section>
+
+<!-- ============ USE CASES ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Use cases</b><span>11:40</span></div>
+  <div class="num">04 · USE CASES</div>
+  <h2>Why use cases?</h2>
+  <p>One user goal, written so that business, testers and agents read the same thing.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>11:40</span></div>
+  <h2>Diagram and specification</h2>
+  <div class="cols" style="grid-template-columns: 1.1fr 1fr; align-items: start">
+    <div>
+      <div class="diagram"><img src="use-case-diagram.png" alt="Use case diagram: the actor Clinic User uses UC-003 Register New Owner and UC-004 Find Owner in the PetClinic system." style="max-height:380px"></div>
+      <p class="small muted" style="margin-top:0.5em">The diagram: who uses the system for which goal</p>
+    </div>
+    <div>
+      <div class="diagram"><img src="use-case-structure.png" alt="Structure of a use case: overview with ID, name, actors, goal and status; preconditions; main success scenario; optional alternative flows; postconditions." style="max-height:380px"></div>
+      <p class="small muted" style="margin-top:0.5em">The specification: one document per use case, after Ivar Jacobson and Alistair Cockburn</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>11:43</span></div>
+  <h2>Use cases and user stories</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>User story</h3>
+      <ul>
+        <li>A placeholder for a conversation</li>
+        <li>“As a guest I want to cancel a reservation …”</li>
+        <li>Good for planning, too thin to build from</li>
+        <li>Lives in the requirements catalog as an FR</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Use case</h3>
+      <ul>
+        <li>The result of that conversation, written down</li>
+        <li>All paths: main scenario, alternative flows, rules</li>
+        <li>Stays in the repository as the current behavior</li>
+        <li>Realizes one or more FRs: <code>**Requirements:** FR-002</code></li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker">The story says what is wanted. The use case says how the system behaves.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>11:46</span></div>
+  <h2>Levels of detail after Cockburn</h2>
+  <div class="levels">
+    <div class="box"><b>☁️ Cloud</b>Business process across applications<p class="small muted" style="margin-top:0.4em">BPMN</p></div>
+    <div class="box"><b>🪁 Kite</b>Process within one application, a summary use case<p class="small muted" style="margin-top:0.4em">BPMN, <code>/business-process</code></p></div>
+    <div class="box" style="border-color:var(--accent)"><b>🌊 Sea level</b>One actor, one goal, one sitting. <b>The use case we write and build.</b><p class="small muted" style="margin-top:0.4em"><code>/use-case-spec</code></p></div>
+    <div class="box"><b>🐟 Fish</b>A sub-function, e.g. “validate address”<p class="small muted" style="margin-top:0.4em">Include, or a business rule</p></div>
+  </div>
+  <p class="small" style="margin-top:1em">Every altitude has its own artifact. An activity in a business process is a sea-level use case. Part 2 turns processes into end-to-end test cases.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>11:49</span></div>
+  <h2>Behavior, not code</h2>
+  <div class="cols">
+    <div class="box">
+      <h3 class="muted">Code-level requirement</h3>
+      <p>“Add <code>POST /reservations/{id}/cancel</code> and a column <code>cancelled_at</code>.”</p>
+      <ul><li>Describes the how</li><li>Only developers can read it</li><li>Outdated after the next refactoring</li></ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Behavior specification</h3>
+      <p>“A guest can cancel a reservation up to 24 hours before arrival. The system then makes the room available again.”</p>
+      <ul><li>Describes the what</li><li>Every stakeholder can read it</li><li>Stays valid when the code changes</li><li>Can be tested from the outside</li></ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>11:52</span></div>
+  <h2>Readable by every stakeholder</h2>
+  <div class="cols" style="grid-template-columns: 1.25fr 1fr">
+<div class="uc"><span class="h">UC-002 Reserve Room</span>
+Actor: Guest
+Precondition: The guest has found an available room
+
+<span class="h">Main Success Scenario</span>
+1. The guest selects the room and the dates.
+2. The system shows the total price.
+3. The guest enters name and email and confirms.
+4. The system saves the reservation and sends
+   a confirmation email.
+
+<span class="h">Alternative Flows</span>
+4a. The room was booked in the meantime. The system
+    informs the guest and shows other rooms.
+
+<span class="h">Business Rules</span>
+BR-001 A reservation is at least one night.</div>
+    <div>
+      <h3>Who reads it?</h3>
+      <ul class="small">
+        <li><b>End user:</b> is this how I work?</li>
+        <li><b>Business:</b> are the rules right?</li>
+        <li><b>Developer and agent:</b> what to build</li>
+        <li><b>Tester:</b> what to test</li>
+      </ul>
+      <p class="kicker">No screens, no APIs, no tables in a use case.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAB 2 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>11:55–12:15</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">2</span><h2 style="margin:0">Use case diagram and entity model</h2>
+  </div>
+  <div class="cmd">
+    <code>/use-case-diagram</code>
+    <code>/entity-model</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li><code>docs/use_cases.puml</code>: is every FR covered? Do the actors match the vision?</li>
+        <li>One goal per use case? “Manage reservations” is not a goal</li>
+        <li><code>docs/entity_model.md</code>: do the names match the glossary?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>You found the UC that realizes <b>searching available rooms</b> and know its number</li>
+        <li>Attributes have types and validation rules</li>
+        <li><b>Bonus:</b> rename one entity and ask the agent to make all docs consistent</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Open the .puml with the PlantUML plugin or plantuml.com. Everybody continues with the search use case so the afternoon is comparable. UC numbers differ between participants.</aside>
+</section>
+
+<!-- ============ GOOD USE CASES ============ -->
+<section>
+  <div class="eyebrow"><b>Use cases</b><span>12:15</span></div>
+  <h2>What makes a use case good for an agent</h2>
+  <div class="cols">
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Do</h3>
+      <ul>
+        <li>One user goal per use case</li>
+        <li>Written from the actor's view</li>
+        <li>Numbered steps, actor and system take turns</li>
+        <li>Alternative flows point to their step: <code>4a</code></li>
+        <li>Numbered, testable business rules: <code>BR-001</code></li>
+        <li>Link the requirements it realizes: <code>FR-001</code></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3 class="muted">Don't</h3>
+      <ul>
+        <li>Screens, buttons, APIs, tables</li>
+        <li>Vague words: <i>fast, usually, appropriate</i></li>
+        <li>Rules hidden inside the steps</li>
+        <li>Guesses: record an open question in <code>docs/open_questions.md</code> instead</li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker">If you cannot test it from the outside, it is not a business rule yet.</p>
+</section>
+
+<!-- ============ LAB 3 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>12:20–12:40</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">3</span><h2 style="margin:0">Specify one use case</h2>
+  </div>
+  <div class="cmd">
+    <code>/use-case-spec UC-###</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li><code>docs/use_cases/UC-###-*.md</code></li>
+        <li>Can you test every business rule from the outside?</li>
+        <li>Any screens, APIs or tables in the text? Remove them</li>
+        <li>Does the <code>**Requirements:**</code> line name the right FRs?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>The agent's open questions are answered or recorded</li>
+        <li>You would sign it as the hotel owner</li>
+        <li><b>Bonus:</b> specify a second use case, e.g. reserving a room</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAB 4 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>12:40–12:50</span></div>
+    <button class="timer" data-minutes="10" type="button">10:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">4</span><h2 style="margin:0">Review the specification</h2>
+  </div>
+  <div class="cmd">
+    <code>/spec-review</code>
+    <code>/open-questions</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Review</h3>
+      <ul>
+        <li>Lint: unresolved ids, uncovered FRs, weak words, glossary synonyms</li>
+        <li>Semantic review: contradictions, untestable rules, missing flows</li>
+        <li><code>docs/open_questions.md</code>: who answers which question?</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>No blocking findings for your use case</li>
+        <li>Every open question has an owner</li>
+        <li><b>Bonus:</b> <code>/spec-review html</code> and open the traceability matrix</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ READY? ============ -->
+<section>
+  <div class="eyebrow"><b>Elaboration</b><span>12:50</span></div>
+  <h2>Ready for implementation?</h2>
+  <div class="cols" style="grid-template-columns: 1.2fr 1fr">
+    <ul>
+      <li>Every functional requirement is covered by a use case</li>
+      <li><code>/spec-review</code> shows no blocking findings</li>
+      <li>The customer has reviewed the main use cases</li>
+      <li>Constraints for runtime, monitoring and testing are written down</li>
+      <li>Key decisions are written as ADRs</li>
+      <li>Each open question has an owner</li>
+    </ul>
+    <div class="box">
+      <h3>From prompt to skill</h3>
+      <p class="small">The IREB AI4RE prompt guide has 23 free prompt templates along the RE activities. A skill is such a template that also knows the file format and the next step.</p>
+      <table style="font-size:0.7em">
+        <tr><td>Identify requirements</td><td><code>/requirements</code></td></tr>
+        <tr><td>Model from text</td><td><code>/use-case-diagram</code></td></tr>
+        <tr><td>Specify requirement</td><td><code>/use-case-spec</code></td></tr>
+        <tr><td>Check consistency</td><td><code>/spec-review</code></td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Wrap-up</b><span>12:55</span></div>
+  <h2>What you have now</h2>
+  <div class="cols">
+    <ul>
+      <li>A requirements catalog and a glossary from a three-line vision</li>
+      <li>A use case diagram and an entity model</li>
+      <li>One specified, reviewed use case</li>
+      <li>Open questions with owners instead of guesses</li>
+    </ul>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>After lunch, 14:00</h3>
+      <ul>
+        <li>The stack file: which skill builds which layer</li>
+        <li>Implement and test your use case</li>
+        <li>Change a requirement and watch the tests</li>
+      </ul>
+      <p class="small muted" style="margin-top:0.5em">Commit and push your <code>docs/</code> now.</p>
+    </div>
+  </div>
+  <p class="kicker">The spec is the work. The code is what the agent derives from it.</p>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="deck.js"></script>
+</body>
+</html>

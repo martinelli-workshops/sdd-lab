@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec-Driven Development · Part 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="reveal.css">
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ============ OPENING ============ -->
+<section class="title-slide">
+  <a class="logo" href="https://martinelli.ch" target="_blank" rel="noopener" aria-label="Martinelli GmbH"></a>
+  <span class="tag">Part 3 of 3 · Day 2 · 10:00–13:00</span>
+  <h1>Brownfield and the harness</h1>
+  <p class="contact-name">Reverse engineering · harness engineering · guardrails · hooks · the Werkstatt</p>
+  <dl class="contacts">
+    <dt>AI Unified Process</dt><dd><a href="https://unifiedprocess.ai" target="_blank" rel="noopener">unifiedprocess.ai</a></dd>
+    <dt>PetClinic</dt><dd><a href="https://github.com/AI-Unified-Process/petclinic" target="_blank" rel="noopener">github.com/AI-Unified-Process/petclinic</a></dd>
+    <dt>Marketplace</dt><dd><a href="https://github.com/ai-unified-process/marketplace" target="_blank" rel="noopener">github.com/ai-unified-process/marketplace</a></dd>
+  </dl>
+  <aside class="notes">Check first: who has the PetClinic (branch h2) built once? The first full build generates the jOOQ classes and downloads the Vaadin frontend and takes a few minutes.</aside>
+</section>
+
+<section class="overview-slide">
+  <div class="eyebrow"><b>The workshop</b><span>10:00</span></div>
+  <h2>Where we are</h2>
+  <div class="parts">
+    <div class="part-card">
+      <span class="when">Day 1 · 10:00–13:00 · done</span>
+      <h3>1 · From vision to use cases</h3>
+      <ul><li>Requirements, diagram, entity model</li><li>Specified, reviewed use case</li></ul>
+    </div>
+    <div class="part-card">
+      <span class="when">Day 1 · 14:00–17:00 · done</span>
+      <h3>2 · From use cases to code and tests</h3>
+      <ul><li>Implement, test, coverage</li><li>Change a requirement</li><li>Processes and E2E tests</li></ul>
+    </div>
+    <div class="part-card now">
+      <span class="when">Day 2 · 10:00–13:00 · now</span>
+      <h3>3 · Brownfield and the harness</h3>
+      <ul><li>Reverse engineering</li><li>Harness engineering, guides and sensors</li><li>Guardrails: ArchUnit, hooks, SonarQube</li><li>The Werkstatt: a software factory</li><li>Option: work on your own project</li></ul>
+    </div>
+  </div>
+  <p class="kicker">Yesterday you steered the agent step by step. Today we build what lets it run without you.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Agenda</b><span>Part 3 · 180 minutes</span></div>
+  <h2>This morning</h2>
+  <div class="timeline dense">
+    <div class="t">10:00</div><div>Recap, environment check</div><div class="d">10'</div>
+    <div class="t">10:10</div><div>Brownfield: from code back to the spec</div><div class="d">15'</div>
+    <div class="t">10:25</div><div class="lab">Lab 9 · Reverse engineering: PetClinic or your project</div><div class="d">25'</div>
+    <div class="t">10:50</div><div>Harness engineering: guides, sensors, guidelines, guardrails</div><div class="d">15'</div>
+    <div class="t">11:05</div><div>The PetClinic harness: ADRs, ArchUnit, sensors, hooks, SonarQube</div><div class="d">15'</div>
+    <div class="t">11:20</div><div class="muted">Break</div><div class="d">20'</div>
+    <div class="t">11:40</div><div class="lab">Lab 10 · Sensors and hooks at work</div><div class="d">20'</div>
+    <div class="t">12:00</div><div>Turn guidelines into guardrails</div><div class="d">5'</div>
+    <div class="t">12:05</div><div class="lab">Lab 11 · Harden the harness: HRS or your project</div><div class="d">20'</div>
+    <div class="t">12:25</div><div>From team workflow to the Werkstatt</div><div class="d">15'</div>
+    <div class="t">12:40</div><div class="lab">Lab 12 · Start a Werkstatt run</div><div class="d">5'</div>
+    <div class="t">12:45</div><div>Lessons from customer projects, risks</div><div class="d">10'</div>
+    <div class="t">12:55</div><div>Read the Werkstatt report, wrap-up</div><div class="d">5'</div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Before we start</b><span>10:03</span></div>
+  <h2>Environment for today</h2>
+  <div class="cols3">
+    <div class="box">
+      <h3>Spring PetClinic · Lab 9</h3>
+      <ul>
+        <li>The classic: code, no specs</li>
+        <li>Plugins as yesterday, nothing to build</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>AI Unified Process PetClinic · Lab 10</h3>
+      <ul>
+        <li>Same domain, rebuilt spec-first, with the full harness</li>
+        <li>Branch <code>h2</code>: embedded H2, <b>no Docker</b></li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Your own project · Labs 9 and 11</h3>
+      <ul>
+        <li>Optional, instead of the reference project</li>
+        <li>On your machine, on a branch of its own</li>
+        <li><code>aiup-core</code> plus the layer plugins of your stack</li>
+      </ul>
+    </div>
+  </div>
+<pre style="font-size:0.6em; margin-top:0.8em"><code>git clone https://github.com/spring-projects/spring-petclinic          # Lab 9
+git clone -b h2 https://github.com/AI-Unified-Process/petclinic        # Lab 10
+cd petclinic &amp;&amp; ./mvnw verify                                          # once, before Lab 10</code></pre>
+  <p class="small muted" style="margin-top:0.4em">Labs 11 and 12 continue in your HRS repository from yesterday, unless you work on your own project.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Your project</b><span>10:06</span></div>
+  <h2>Working on your own project</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Before you start</h3>
+      <ul>
+        <li><b>Are you allowed</b> to send this code to an AI agent? Check your company's policy first</li>
+        <li>No secrets in the repository, no production data in the database</li>
+        <li>Work on a branch or worktree of its own. Nothing goes to the shared main branch today</li>
+        <li>Pick <b>one module</b>, the one you will change next</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Which labs</h3>
+      <table class="small" style="font-size:0.78em">
+        <tr><td style="white-space:nowrap"><b>Lab 9</b></td><td><code>/stack</code>, <code>/reverse-engineer</code> one module</td></tr>
+        <tr><td style="white-space:nowrap"><b>Lab 10</b></td><td>Everybody in the PetClinic: the reference harness</td></tr>
+        <tr><td style="white-space:nowrap"><b>Lab 11</b></td><td>One ADR, one architecture rule, one hook for your project</td></tr>
+        <tr><td style="white-space:nowrap"><b>Lab 12</b></td><td>Werkstatt in HRS, or pick the use case you would send through it first</td></tr>
+      </table>
+      <p class="small muted" style="margin-top:0.5em"><code>aiup-core</code> works for every stack. Layer plugins: Spring Boot, Vaadin, jOOQ, JPA, Flyway, Angular, Next.js, NestJS, Drizzle, Blazor/.NET, Playwright.</p>
+    </div>
+  </div>
+  <aside class="notes">Ask who brought a project and which stack. Pair people without a project or without permission with the reference track. Never put customer code into a shared Codespace.</aside>
+</section>
+
+<!-- ============ BROWNFIELD ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Brownfield</b><span>10:10</span></div>
+  <div class="num">06 · BROWNFIELD</div>
+  <h2>From code back to the spec</h2>
+  <p>Most systems already exist. They have code, but no specification.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Brownfield</b><span>10:10</span></div>
+  <h2>Brownfield workflow</h2>
+  <div class="diagram"><img src="brownfield.png" style="max-height:290px" alt="The AI agent reads the code, tests and documentation of the existing system and generates use cases and the entity model. The software engineer and the requirements engineer review them."></div>
+  <div class="diagram-note">
+    <div><b>The agent reads</b>Code, database schema, tests and old documents of the existing system.</div>
+    <div><b>The agent writes the spec</b><code>/reverse-engineer</code> generates the use case diagram, the use cases and the entity model.</div>
+    <div><b>Humans review, then spec-first</b>The code shows what the system does, not what it should do. From here, every change starts in the spec.</div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Brownfield</b><span>10:14</span></div>
+  <h2>Five steps to a baseline</h2>
+  <div class="cols" style="grid-template-columns: 1.25fr 1fr; align-items:start">
+    <div class="step-list">
+      <div class="box"><span class="n">1</span><div><code>/stack</code><p>Detects layers and modules from the build files and the source tree</p></div></div>
+      <div class="box"><span class="n">2</span><div><code>/reverse-engineer</code>, one module at a time<p>Use case diagram, one spec per use case, entity model from the database</p></div></div>
+      <div class="box"><span class="n">3</span><div>Human review with the business<p>The code shows what the system does, not what it should do. Bugs become open questions</p></div></div>
+      <div class="box"><span class="n">4</span><div><code>/open-questions</code> and <code>/spec-review</code><p>Gaps recorded, contradictions found, then the specs are the baseline</p></div></div>
+      <div class="box" style="border-color:var(--accent)"><span class="n">5</span><div>Continue with yesterday's workflow<p>Every change from now on: change, correction or new feature</p></div></div>
+    </div>
+    <div class="box">
+      <h3>Large codebases</h3>
+      <ul>
+        <li>The agent sees only what fits in its context</li>
+        <li>Reverse engineer per module, not the whole system at once</li>
+        <li>A modular structure keeps the context small: one module, its use cases, its entities</li>
+        <li>No clear modules yet? Make cutting them part of the modernization</li>
+        <li>Start with the module you will change next</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Brownfield</b><span>10:19</span></div>
+  <h2>What the code cannot tell you</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>The agent can recover</h3>
+      <ul>
+        <li>Actors from roles and security config</li>
+        <li>Goals from views, controllers, endpoints</li>
+        <li>Steps and alternative flows from the control flow</li>
+        <li>Rules from validators, constraints, <code>if</code>s</li>
+        <li>Entities and relations from the schema</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Only people can decide</h3>
+      <ul>
+        <li>Is this behavior intended, or a bug?</li>
+        <li>Is this feature still used?</li>
+        <li>Why does this rule exist?</li>
+        <li>Which naming is the business language?</li>
+      </ul>
+      <p class="small" style="margin-top:0.5em">Each answer goes into the spec, not into a chat.</p>
+    </div>
+  </div>
+  <p class="kicker">A reverse-engineered spec is a draft. It becomes the baseline after the review.</p>
+</section>
+
+<!-- ============ LAB 9 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>10:25–10:50</span></div>
+    <button class="timer" data-minutes="25" type="button">25:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">9</span><h2 style="margin:0">Reverse engineering</h2>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Track A · Spring PetClinic</h3>
+      <div class="cmd">
+        <code class="alt">git clone https://github.com/spring-projects/spring-petclinic</code>
+        <code>/reverse-engineer</code>
+        <code>/spec-review</code>
+      </div>
+      <ul>
+        <li><code>docs/use_cases.puml</code>: user goals, or controller methods?</li>
+        <li><code>docs/entity_model.md</code> against the schema</li>
+        <li><b>Bonus:</b> compare with <code>AI-Unified-Process/petclinic/docs</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Track B · Your project</h3>
+      <div class="cmd">
+        <code>/stack</code>
+        <code>/reverse-engineer &lt;one module&gt;</code>
+        <code>/spec-review</code>
+      </div>
+      <ul>
+        <li>Would a business person recognise the use cases?</li>
+        <li>What did the agent get wrong, and why: naming, missing context, dead code?</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small" style="margin-top:0.6em"><b>Done when:</b> you found one behavior that looks like a bug, recorded as an open question for the business, and <code>/spec-review</code> ran on the generated specs.</p>
+  <aside class="notes">Expect around 8–12 use cases. Typical bug candidate: owner search by last name is a prefix match and case handling differs per database; the pet birth date may lie in the future. Ask: what would the business say?</aside>
+</section>
+
+<!-- ============ HARNESS ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Harness</b><span>10:50</span></div>
+  <div class="num">07 · HARNESS ENGINEERING</div>
+  <h2>Everything around the model</h2>
+  <p>The model is the same for everybody. The harness makes the difference.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Harness</b><span>10:50</span></div>
+  <h2>Harness engineering</h2>
+  <p class="small" style="margin-top:-0.4em"><b>The harness</b> is everything around the model that makes the agent reliable. Goal: less review effort and higher quality.</p>
+  <div class="harness">
+    <div class="box"><h3>Context</h3>Specs, CLAUDE.md, constraints</div>
+    <div class="box"><h3>Tools</h3>MCP servers, CLI, platform APIs</div>
+    <div class="box"><h3>Skills</h3>Reusable know-how per stack</div>
+    <div class="agent">AI Agent</div>
+    <div class="box"><h3>Guardrails</h3>Hooks, permissions, ArchUnit</div>
+    <div class="box"><h3>Feedback</h3>Compiler, tests, quality gates</div>
+    <div class="box"><h3>Review</h3>Human checks against the spec</div>
+  </div>
+  <p class="small muted" style="margin-top:0.8em">The human steers: when a mistake happens more than once, improve the harness, not only the code.</p>
+  <div class="source">Source: <a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank" rel="noopener">Birgitta Böckeler, Harness Engineering for Coding Agent Users</a></div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Harness</b><span>10:53</span></div>
+  <h2>Guides and sensors</h2>
+  <div class="gs">
+    <div class="box gs-guides">
+      <h3>Guides</h3>
+      <p class="muted">Steer the agent before it acts</p>
+      <b>Specs and use cases</b><b>CLAUDE.md, skills, <code>stack.md</code></b><b>Architecture rules, ADRs</b>
+    </div>
+    <svg class="gs-arrow" viewBox="0 0 110 20" width="110" height="20" aria-hidden="true"><line x1="8" y1="10" x2="96" y2="10"/><polygon points="96,4 108,10 96,16"/></svg>
+    <div class="gs-agent">AI Agent</div>
+    <svg class="gs-arrow" viewBox="0 0 120 280" width="120" height="280" aria-hidden="true">
+      <line x1="14" y1="128" x2="106" y2="78"/><polygon points="4,134 12,121 18,132"/><polygon points="116,72 102,73 108,85"/>
+      <line x1="14" y1="152" x2="106" y2="202"/><polygon points="4,146 18,148 12,159"/><polygon points="116,208 108,195 102,207"/>
+    </svg>
+    <div class="gs-sensors">
+      <div class="box"><h3>Computational sensors</h3><p class="muted">Deterministic and fast</p><b>Compiler, tests, ArchUnit, SonarQube</b></div>
+      <div class="box"><h3>Inferential sensors</h3><p class="muted">AI-based, slower</p><b>Review agent, coverage check against the spec</b></div>
+    </div>
+  </div>
+  <p class="kicker" style="text-align:center">Sensors close the loop: the agent fixes its own mistakes before you review.</p>
+  <div class="source">Source: <a href="https://martinfowler.com/articles/harness-engineering.html" target="_blank" rel="noopener">Birgitta Böckeler, Harness Engineering for Coding Agent Users</a></div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Harness</b><span>10:56</span></div>
+  <h2>Guidelines, guardrails, architecture</h2>
+  <div class="cols3">
+    <div class="box">
+      <h3>Guidelines</h3>
+      <p class="muted small">Tell the agent how</p>
+      <ul>
+        <li>CLAUDE.md or AGENTS.md</li>
+        <li>Coding conventions</li>
+        <li>Skills with stack knowledge</li>
+      </ul>
+      <p class="small" style="margin-top:0.5em"><b>Soft:</b> the agent can ignore them</p>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Guardrails</h3>
+      <p class="muted small">Stop the agent when it is wrong</p>
+      <ul>
+        <li>Hooks before and after tool use</li>
+        <li>ArchUnit, static analysis</li>
+        <li>Tests and quality gates in CI</li>
+        <li>Permissions and sandbox</li>
+      </ul>
+      <p class="small" style="margin-top:0.5em"><b>Hard:</b> enforced automatically</p>
+    </div>
+    <div class="box">
+      <h3>Architecture docs</h3>
+      <p class="muted small">Explain why</p>
+      <ul>
+        <li>4+1 views</li>
+        <li>ADRs, each linked to an NFR or constraint</li>
+        <li>The stack file</li>
+      </ul>
+      <p class="small" style="margin-top:0.5em"><b>Context:</b> for humans and agents</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Harness</b><span>10:59</span></div>
+  <h2>The 4+1 views, and where they live</h2>
+  <div class="cols" style="grid-template-columns: 1.15fr 1fr">
+    <table class="small">
+      <tr><th>View</th><th>Question</th></tr>
+      <tr><td>Logical</td><td>Which concepts and responsibilities?</td></tr>
+      <tr><td>Development</td><td>How is the code organized? Partly set by the stack plugin</td></tr>
+      <tr><td>Process</td><td>What happens at runtime? Transactions, integration</td></tr>
+      <tr><td>Physical</td><td>Where does it run?</td></tr>
+      <tr class="hl"><td>+1 Scenarios</td><td>The use cases</td></tr>
+    </table>
+<pre><code>CLAUDE.md          # short rules, links
+docs/
+  requirements.md  # FR, NFR, constraints
+  entity_model.md
+  use_cases/       # +1: scenarios
+  test_cases/
+  architecture/
+    logical.md
+    development.md
+    process.md
+    physical.md
+    stack.md
+    decisions/     # ADR-001 …</code></pre>
+  </div>
+  <p class="small muted">Use cases say <i>what</i>, architecture says <i>how it is built</i>. No business rule belongs in <code>docs/architecture/</code>.</p>
+</section>
+
+<!-- ============ PETCLINIC HARNESS ============ -->
+<section>
+  <div class="eyebrow"><b>PetClinic</b><span>11:05</span></div>
+  <h2>The PetClinic: decisions first</h2>
+  <div class="cols" style="grid-template-columns: 1.2fr 1fr">
+    <table class="tight" style="font-size:0.66em">
+      <tr><td>ADR-001</td><td>jOOQ instead of JPA</td></tr>
+      <tr><td>ADR-002</td><td>Vaadin Flow, server-side UI</td></tr>
+      <tr><td>ADR-003</td><td>Flyway owns the schema</td></tr>
+      <tr><td>ADR-004</td><td>Package by feature: <code>ui</code> + <code>domain</code>, no service layer</td></tr>
+      <tr><td>ADR-005</td><td>Validation in the form</td></tr>
+      <tr><td>ADR-006</td><td>Two test layers, merged coverage</td></tr>
+      <tr class="hl"><td>ADR-007</td><td>Traceability sensors</td></tr>
+      <tr><td>ADR-008</td><td>No authentication</td></tr>
+      <tr><td>ADR-009</td><td>The repository is the transaction boundary</td></tr>
+      <tr class="hl"><td>ADR-010</td><td>Hooks guard the session, tests guard the repository</td></tr>
+      <tr class="hl"><td>ADR-011</td><td>Guards read state and demand evidence</td></tr>
+    </table>
+    <div class="box">
+      <ul>
+        <li>Every ADR links the NFR or constraint it serves</li>
+        <li>The stack file follows from the ADRs: Service and API are <code>–</code></li>
+        <li><code>/architecture-decision</code> writes them</li>
+        <li><b>Decide first, then generate:</b> the ADR exists before the first use case that needs it</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="sensors">
+  <div class="eyebrow"><b>PetClinic</b><span>11:09</span></div>
+  <h2>Sensors in detail</h2>
+  <table>
+    <tr><th>Sensor</th><th>Checks</th><th>Runs</th></tr>
+    <tr class="group"><td colspan="3">Computational · traceability between docs and code</td></tr>
+    <tr><td>UseCaseTraceabilityTest</td><td>Every <code>@UseCase</code> points to a real UC, flow and BR. Status <i>Tested</i>/<i>Done</i>: a test per flow and rule</td><td>mvnw test</td></tr>
+    <tr><td>TestCaseTraceabilityTest</td><td>Every <code>TC-NNN</code> has its Playwright <code>TC&lt;NNN&gt;…IT</code>, and back</td><td>mvnw test</td></tr>
+    <tr><td>BusinessRuleTraceabilityTest</td><td>Every cited <code>UC-NNN BR-NNN</code> exists, no rule text twice</td><td>mvnw test</td></tr>
+    <tr><td>RequirementTraceabilityTest</td><td>FR ↔ UC in both directions, every FR realized</td><td>mvnw test</td></tr>
+    <tr class="group"><td colspan="3">Computational · architecture and quality</td></tr>
+    <tr><td>ArchitectureTest</td><td>ArchUnit: <code>ui</code> + <code>domain</code> per feature, no cycles, no JPA, no plain SQL, domain free of Vaadin</td><td>mvnw test</td></tr>
+    <tr><td>TestLayerConventionsTest</td><td><code>*Test</code> is browserless, <code>*IT</code> is Playwright, so no test silently never runs</td><td>mvnw test</td></tr>
+    <tr><td>JaCoCo + SonarQube</td><td>Merged coverage of both test layers, quality gate on every pull request</td><td>CI</td></tr>
+    <tr class="group"><td colspan="3">Inferential</td></tr>
+    <tr><td>uc-coverage-layered</td><td>Agent maps every step, flow and rule of the spec onto code and tests</td><td>/use-case-coverage</td></tr>
+  </table>
+  <p class="small" style="margin-top:0.5em">The sensor classes carry the JUnit tag <code>sensor</code>: <code>./mvnw -q test -Dgroups=sensor</code> takes seconds and needs no Docker.</p>
+  <div class="source"><a href="https://github.com/AI-Unified-Process/petclinic" target="_blank" rel="noopener">github.com/AI-Unified-Process/petclinic</a></div>
+</section>
+
+<section class="sensors">
+  <div class="eyebrow"><b>PetClinic</b><span>11:13</span></div>
+  <h2>Hooks guard the session</h2>
+  <table>
+    <tr><th>Hook</th><th>What it does</th><th>Event</th></tr>
+    <tr><td>require-sensors.sh</td><td>Refuses to end a turn while <code>src/</code>, <code>docs/</code> or <code>pom.xml</code> changed after the last green sensor run</td><td>Stop</td></tr>
+    <tr><td>guard-spec-status.sh</td><td>Refuses an edit that sets <i>Done</i>, <i>Tested</i> or <i>Automated</i> without a coverage audit in this session</td><td>PreToolUse</td></tr>
+    <tr><td>check-spec-status.sh</td><td>Rereads every <code>Status:</code> after each tool call, so <code>sed</code> and heredocs are caught too</td><td>PostToolUse</td></tr>
+    <tr><td>record-coverage-check.sh</td><td>Records that the coverage agent finished: the evidence the guards ask for</td><td>SubagentStop</td></tr>
+    <tr><td>record-sensor-run.sh</td><td>Marks a sensor run only if every Surefire report is fresh and green</td><td>PostToolUse</td></tr>
+    <tr><td>session-start.sh</td><td>Records the starting commit and every <code>Status:</code> line</td><td>SessionStart</td></tr>
+  </table>
+  <div class="cols" style="margin-top:0.6em; font-size:0.78em">
+    <p><b>Guards read the repository,</b> not the tool call. <b>Evidence is positive:</b> a fresh report counts, a quiet console does not. <b>Fail open:</b> a broken hook never blocks the session.</p>
+    <p><b>Rule:</b> if it can be checked by reading the repository, it is a test, not a hook. Hooks only fire in a Claude Code session; ArchUnit binds CI and every contributor.</p>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>PetClinic</b><span>11:17</span></div>
+  <h2>SonarQube as a sensor</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>In CI</h3>
+      <ul>
+        <li><code>mvn verify sonar:sonar</code> on every push and pull request</li>
+        <li>Coverage: JaCoCo of Browserless <i>and</i> Playwright tests, merged</li>
+        <li>Generated jOOQ code excluded</li>
+        <li>The quality gate blocks the merge</li>
+        <li>The hook smoke test runs before the build</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>For the agent</h3>
+      <ul>
+        <li>SonarQube MCP server: the agent reads issues, hotspots, the gate status</li>
+        <li>SonarQube plugin for Claude Code: <code>/sonar-list-issues</code>, <code>/sonar-fix-issue</code>, <code>/sonar-quality-gate</code></li>
+        <li>SonarQube for IDE as the fast local loop</li>
+      </ul>
+    </div>
+  </div>
+  <p class="kicker">From a report for humans to feedback for the agent.</p>
+</section>
+
+<!-- ============ BREAK ============ -->
+<section class="divider">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Break</b><span>11:20–11:40</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div class="num">BREAK</div>
+  <h2>20 minutes</h2>
+  <p>Start <code>./mvnw verify</code> in the PetClinic now if it has not run yet.</p>
+</section>
+
+<!-- ============ LAB 10 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>11:40–12:00</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">10</span><h2 style="margin:0">Sensors and hooks at work</h2>
+  </div>
+  <p class="small" style="margin:0 0 0.2em">In <code>AI-Unified-Process/petclinic</code>, branch <code>h2</code>. Try to break it, and watch what stops you.</p>
+  <div class="cmd" style="grid-template-columns: auto auto; justify-content: start; column-gap: 0.6em">
+    <code class="alt">./mvnw -q test -Dgroups=sensor</code>
+    <code class="alt">.claude/hooks/smoke.sh</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Break it</h3>
+      <ul>
+        <li>Rename an alternative flow in a <code>docs/use_cases/UC-###.md</code>, run the sensors</li>
+        <li>Ask Claude: <i>“Find owners directly with SQL in the view”</i>. Which rule fails?</li>
+        <li>Ask Claude to set a use case to <i>Done</i>. Watch the hook refuse</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Done when</h3>
+      <ul>
+        <li>You saw a sensor, ArchUnit and a hook stop the agent, and read their messages</li>
+        <li>You know why the Stop hook asks for <code>-Dgroups=sensor</code></li>
+        <li><b>Bonus:</b> read ADR-010 and ADR-011. Which bypasses did ADR-011 close?</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Revert with git checkout afterwards. The SQL-in-view request violates noPlainSql and the ui/domain rules. The status change is stopped by guard-spec-status.sh until /use-case-coverage ran.</aside>
+</section>
+
+<!-- ============ GUIDELINES TO GUARDRAILS ============ -->
+<section>
+  <div class="eyebrow"><b>Guardrails</b><span>12:00</span></div>
+  <h2>Turn guidelines into guardrails</h2>
+  <div class="cols">
+    <div>
+      <ul class="small">
+        <li><b>If a rule matters, enforce it:</b> a rule in CLAUDE.md is a wish, a failing build is a fact</li>
+        <li><b>Architecture rules as tests:</b> ArchUnit checks layers, packages and dependencies</li>
+        <li><b>Hooks for the session:</b> what the agent must have done before it says “done”</li>
+        <li><b>Quality gates in CI:</b> static analysis, dependency check, coverage</li>
+        <li><b>A mistake twice is a gap in the harness</b></li>
+      </ul>
+    </div>
+    <div>
+<pre><code>@ArchTest
+static final ArchRule uiDoesNotUseJooq =
+    noClasses().that().resideInAPackage("..ui..")
+        .should().dependOnClassesThat()
+        .resideInAPackage("org.jooq..");</code></pre>
+<pre><code>#!/usr/bin/env bash
+# Stop hook: no end of turn while tests are red
+active=$(jq -r .stop_hook_active)
+[ "$active" = true ] &amp;&amp; exit 0  # no loop
+./mvnw -q test &gt; target/hook.log 2&gt;&amp;1 &amp;&amp; exit 0
+echo "Tests are red, fix them:" &gt;&amp;2
+tail -30 target/hook.log &gt;&amp;2
+exit 2  # blocks, stderr goes to the agent</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAB 11 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>12:05–12:25</span></div>
+    <button class="timer" data-minutes="20" type="button">20:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">11</span><h2 style="margin:0">Harden the harness</h2>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Track A · HRS</h3>
+      <ul>
+        <li><code>/architecture-decision</code> for a decision the plugins made for you, e.g. <i>views never use jOOQ directly</i></li>
+        <li>Add <code>com.tngtech.archunit:archunit-junit5</code> (test scope) to the POM <b>by hand</b>. <code>archunit.version</code> is already there</li>
+        <li>Let the agent turn the ADR into an ArchUnit rule</li>
+        <li>Stop hook in <code>.claude/settings.json</code> that runs <code>./mvnw -q test</code></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Track B · Your project</h3>
+      <ul>
+        <li><code>/architecture-decision</code> for a rule your team already follows but nobody checks</li>
+        <li>Enforce it with your stack's tool: ArchUnit, NetArchTest, dependency-cruiser, ESLint boundaries</li>
+        <li>Stop hook that runs your fastest test command</li>
+        <li>CLAUDE.md that links requirements, architecture and the stack file</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small" style="margin-top:0.6em"><b>Done when:</b> breaking the rule on purpose makes the build red, and the hook stops the agent once while the tests are red. <b>Bonus:</b> a <code>@UseCase</code> traceability test like the PetClinic's, or a SonarQube quality gate.</p>
+</section>
+
+<!-- ============ WERKSTATT ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Werkstatt</b><span>12:25</span></div>
+  <div class="num">08 · THE WERKSTATT</div>
+  <h2>A software factory</h2>
+  <p>From approved use case to tested pull request, without steering every step.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Werkstatt</b><span>12:25</span></div>
+  <h2>First by hand: one team, shared decisions</h2>
+  <div class="stations">
+    <div class="st human"><span class="who">1</span><b>Spec reviewed</b><code>/spec-review</code> green</div><span class="arr">→</span>
+    <div class="st human"><span class="who">2</span><b>Owner assigned</b>One developer per UC</div><span class="arr">→</span>
+    <div class="st"><span class="who">3</span><b>Branch or worktree</b>Isolated session</div><span class="arr">→</span>
+    <div class="st"><span class="who">4</span><b>Agent implements</b>Code and tests</div><span class="arr">→</span>
+    <div class="st gate"><span class="who">5</span><b>Quality gates</b>Build, ArchUnit, tests</div><span class="arr">→</span>
+    <div class="st gate"><span class="who">6</span><b>Review vs. spec</b>Coverage audit</div><span class="arr">→</span>
+    <div class="st human"><span class="who">7</span><b>Merge</b>Status <i>Implemented</i></div>
+  </div>
+  <ul style="margin-top:1em" class="small">
+    <li><b>Shared harness:</b> same CLAUDE.md, plugins and skills for everybody, from the repository</li>
+    <li><b>Two agents never work on the same specification.</b> Small pull requests that can be reviewed</li>
+    <li>Progress is tracked per use case on a Kanban board, not in story points</li>
+  </ul>
+  <p class="kicker">Steps 3 to 6 are always the same. That is what the Werkstatt automates.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Werkstatt</b><span>12:28</span></div>
+  <h2>Roles and branch model</h2>
+  <div class="cols" style="grid-template-columns: 1.15fr 1fr">
+    <table class="small">
+      <tr><th>Role</th><th>Owns</th></tr>
+      <tr><td><b>Domain expert</b></td><td>Requirements, use cases, answers to open questions. Sets a UC to <i>Approved</i></td></tr>
+      <tr><td><b>Software engineer</b></td><td>Architecture, ADRs, stack file, harness, CI. Reviews and merges</td></tr>
+      <tr><td><b>Orchestrator</b></td><td>Selection, order, gates, retries, budgets</td></tr>
+      <tr><td><b>Agents</b></td><td>Code and tests for one UC, one headless session per station</td></tr>
+    </table>
+    <div class="step-list" style="font-size:0.72em">
+      <div class="box"><span class="n">1</span><div>Domain expert opens <code>change/online-booking</code>, edits the specs</div></div>
+      <div class="box"><span class="n">2</span><div>Sets the use cases to <i>Approved</i>: the gate</div></div>
+      <div class="box"><span class="n">3</span><div>Werkstatt runs, opens one PR against the change branch</div></div>
+      <div class="box"><span class="n">4</span><div>Engineer reviews and merges into the change branch</div></div>
+      <div class="box" style="border-color:var(--accent)"><span class="n">5</span><div>Spec, code and tests reach <code>main</code> together</div></div>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:0.6em">A workshop, not a factory floor: the domain expert and the software engineer stay in it.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Werkstatt</b><span>12:32</span></div>
+  <h2>Stations and gates</h2>
+  <div class="stations">
+    <div class="st gate"><span class="who">G1</span><b>Spec lint</b>Ids, links, weak words, blocking questions</div><span class="arr">→</span>
+    <div class="st"><span class="who">Agent</span><b>Implement</b><code>/use-case-implement</code> with the spec diff</div><span class="arr">→</span>
+    <div class="st"><span class="who">Agent · fresh session</span><b>Test</b><code>/use-case-test</code>, reads the spec, not the implementer</div><span class="arr">→</span>
+    <div class="st gate"><span class="who">G2–G4</span><b>Build and tests</b>Commands of <code>stack.md</code>, ArchUnit</div><span class="arr">→</span>
+    <div class="st gate"><span class="who">G5</span><b>Spec coverage</b>Audit, verified in code</div><span class="arr">→</span>
+    <div class="st human"><span class="who">Human</span><b>Review</b>One PR, status <i>Tested</i></div>
+  </div>
+  <div class="cols" style="margin-top:1em; font-size:0.78em">
+    <ul>
+      <li><b>Fix rounds:</b> a red build goes back to the implementer, a test gap to the tester. G6: <code>max_rounds</code>, <code>max_cost_usd</code> per use case</li>
+      <li><b>Lane guard:</b> test code by the implementer, production code by the tester, edits to specs, <code>.claude/</code> or CI are reverted and listed</li>
+    </ul>
+    <ul>
+      <li><b>Verified audit:</b> “complete” is checked: a matrix row per step, flow and rule, and a <code>Read</code> of every cited file in the tool log</li>
+      <li><b>Outcomes:</b> <code>ready</code>, <code>blocked</code>, <code>stuck</code>, <code>pending</code>, <code>skipped</code></li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Werkstatt</b><span>12:36</span></div>
+  <h2>The andon cord</h2>
+  <div class="cols">
+    <div>
+      <p>When a station finds a gap in the specification, it does not guess.</p>
+      <ul>
+        <li>It records a question in <code>docs/open_questions.md</code> with <code>**Blocking:** Yes</code></li>
+        <li>The Werkstatt reads the file, not the agent's answer</li>
+        <li>The use case stops: only the question goes into the pull request</li>
+        <li>The domain expert answers it in the change branch, the next run builds again</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>Why this matters</h3>
+      <p class="small">The main difference from code-first agent pipelines: a gap becomes a question for a person, not a hidden assumption in the code.</p>
+      <h3 style="margin-top:0.8em">Where it runs</h3>
+      <ul class="small">
+        <li>GitHub Actions: reusable workflow <code>aiup-werkstatt.yml</code>, a throwaway runner</li>
+        <li>Locally: <code>pipelines/werkstatt/run-local.sh</code>, in a separate worktree, no PR</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LAB 12 ============ -->
+<section class="lab" data-background-color="var(--lab)">
+  <div class="lab-head">
+    <div class="eyebrow"><b>Hands-on</b><span>12:40–12:45 · runs in the background</span></div>
+    <button class="timer" data-minutes="5" type="button">5:00</button>
+  </div>
+  <div style="display:flex; gap:0.6em; align-items:flex-end; margin-bottom:0.3em">
+    <span class="lab-no">12</span><h2 style="margin:0">Start a Werkstatt run</h2>
+  </div>
+  <p class="small" style="margin:0 0 0.2em">In your HRS Codespace, with a use case that is specified but not built yet (Lab 3 bonus). None? Watch the run on the projector. Own project: pick the use case you would send through first, and the gate it would fail today.</p>
+  <div class="cmd">
+    <code class="alt">git switch -c change/reserve-room</code>
+    <code class="alt">Status: Approved → git commit -am "Approve UC-###"</code>
+    <code>~/.aiup/marketplace/pipelines/werkstatt/run-local.sh UC-###</code>
+  </div>
+  <div class="lab-grid">
+    <div>
+      <h3>Read before you say yes</h3>
+      <ul>
+        <li>No sandbox: the stations run with <code>bypassPermissions</code> as you</li>
+        <li>That is why we run it in a throwaway Codespace</li>
+      </ul>
+    </div>
+    <div>
+      <h3>At 12:55</h3>
+      <ul>
+        <li>Open <code>.werkstatt/report.md</code> in the worktree</li>
+        <li>Outcome? How many fix rounds? What did it cost?</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Needs git, python3, jq and a Claude Code login with the plugins. If the Codespace lacks jq: sudo apt-get install -y jq. If a participant has no time or budget, the trainer runs it on the projector instead. Show a prepared report as fallback.</aside>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<section class="divider">
+  <div class="eyebrow"><b>Practice</b><span>12:45</span></div>
+  <div class="num">09 · PRACTICE</div>
+  <h2>Lessons from customer projects</h2>
+  <p>What changes when a team works like this every day.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Practice</b><span>12:45</span></div>
+  <h2>Two bottlenecks</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Requirements and context</h3>
+      <ul>
+        <li>The agent builds faster than the business can decide what it wants</li>
+        <li>Unclear requirements give plausible but wrong code</li>
+        <li>Large legacy code does not fit. The agent sees only what you give it</li>
+        <li>Modularity is now a requirement: self-contained systems keep the context small</li>
+      </ul>
+    </div>
+    <div class="box">
+      <h3>Review</h3>
+      <ul>
+        <li>Generating is fast, understanding is not</li>
+        <li>Without a spec you review against nothing</li>
+        <li><b>Review must be risk-based:</b> deep review where a mistake hurts, sensors for the rest</li>
+        <li>Plan the review time. Teams underestimate it every time</li>
+      </ul>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:0.9em">Teams get smaller (1–2 developers per system), move from sprints to Kanban and track progress per use case.</p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Practice</b><span>12:47</span></div>
+  <h2>Risk-based review at Anthropic</h2>
+  <div class="review">
+    <ol class="steps">
+      <li><span class="n">1</span><div><b>Before the PR</b>Agent runs build, tests, linter. A subagent reviews the diff in a fresh context</div></li>
+      <li><span class="n">2</span><div><b>AI review on every PR</b>Parallel agents hunt bugs, verifiers vote. Only confirmed findings are posted</div></li>
+      <li><span class="n">3</span><div><b>Security review</b>Separate pass. Open findings block the merge</div></li>
+      <li><span class="n">4</span><div><b>CI and merge queue</b>Lint, types, tests, build. Re-run against the latest main</div></li>
+      <li class="human"><span class="n">5</span><div><b>Human approval by risk</b>The change sets the tier, not the author</div></li>
+    </ol>
+    <div class="side">
+      <div class="box">
+        <h3>Human approvals by risk</h3>
+        <div class="tiers">
+          <div><span class="tier">0</span><b>Low</b> docs, additive change behind a flag</div>
+          <div><span class="tier">1</span><b>Medium</b> ordinary product change</div>
+          <div><span class="tier">2</span><b>High</b> billing, CI workflows, auto-updater</div>
+        </div>
+      </div>
+      <div class="box">
+        <h3>What stays human</h3>
+        <ul>
+          <li>Should we build this at all?</li>
+          <li>Architecture decisions</li>
+          <li>Reading the evidence</li>
+          <li>Owning the outcome</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <p class="small muted" style="margin-top:0.5em">Source: <a href="https://claude.dev/blog/solving-code-review-at-anthropic" target="_blank" rel="noopener">claude.dev/blog/solving-code-review-at-anthropic</a></p>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Risks</b><span>12:50</span></div>
+  <h2>Risks and how to handle them</h2>
+  <table>
+    <tr><th>Risk</th><th>Mitigation</th></tr>
+    <tr><td>Plausible but wrong code, silent logic errors</td><td>Spec as oracle, tests per business rule, coverage check</td></tr>
+    <tr><td>Architecture drift</td><td>ArchUnit, stack plugin, ADRs written before the first use case</td></tr>
+    <tr><td>Prompt injection, over-permissive agents</td><td>Sandbox or VM, minimal permissions, review dependencies</td></tr>
+    <tr><td>Data leakage</td><td>No production data, self-hosted models for sensitive code</td></tr>
+    <tr><td>Spec drift</td><td>One owner per use case, spec diff in the same pull request, traceability sensors</td></tr>
+    <tr><td>Legal and IP: license, ownership, auditability</td><td>Dependency and license scans, every change traced to a use case</td></tr>
+    <tr><td>Skill erosion, false confidence</td><td>Review everything; “AI created it” is not a quality gate</td></tr>
+  </table>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Practice</b><span>12:52</span></div>
+  <h2>Harness engineering in practice</h2>
+  <div class="cols">
+    <ul>
+      <li><b>Start small:</b> one CLAUDE.md, one skill, one quality gate</li>
+      <li><b>A mistake twice is a gap in the harness:</b> fix the context or add a check, not only the code</li>
+      <li><b>Behavior is the weakest harness:</b> specs and test cases fill the gap</li>
+    </ul>
+    <ul>
+      <li><b>Make the code harnessable:</b> strong types, clear module boundaries, known frameworks</li>
+      <li><b>Share it like code:</b> versioned and reviewed, one harness for the team</li>
+      <li><b>Measure:</b> first-pass rate of the Werkstatt, review findings, tokens per use case</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ WRAP-UP ============ -->
+<section>
+  <div class="eyebrow"><b>Wrap-up</b><span>12:55</span></div>
+  <h2>Your Werkstatt run</h2>
+  <div class="cols">
+    <div class="box">
+      <h3>Read <code>.werkstatt/report.md</code></h3>
+      <ul>
+        <li><code>ready</code>, <code>blocked</code> or <code>stuck</code>?</li>
+        <li>Blocked: which open question? Would a person have guessed the same?</li>
+        <li>How many fix rounds, what did it cost?</li>
+        <li>Compare with your manual run yesterday</li>
+      </ul>
+    </div>
+    <div class="box" style="border-color:var(--accent)">
+      <h3>What decided the result</h3>
+      <ul>
+        <li>The quality of the use case</li>
+        <li>The sensors that told the agent it was wrong</li>
+        <li>Not the model. That was the same for everybody</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow"><b>Wrap-up</b><span>12:58</span></div>
+  <h2>Try it on your own stack</h2>
+  <ul>
+    <li><b>Pick one real use case:</b> small, but with real business rules</li>
+    <li><b>Write the spec first:</b> vision, requirements, entity model, one use case. Or <code>/reverse-engineer</code> one module</li>
+    <li><b>Build a minimal harness:</b> CLAUDE.md, the stack file, one ArchUnit rule, one hook, one quality gate</li>
+    <li><b>Reuse what exists:</b> the AI Unified Process marketplace, the PetClinic as reference</li>
+    <li><b>Automate when the first-pass rate is high:</b> then the Werkstatt</li>
+  </ul>
+  <p class="kicker">Specs and the harness reduce non-determinism. You stay responsible for the quality.</p>
+</section>
+
+<section class="title-slide">
+  <a class="logo" href="https://martinelli.ch" target="_blank" rel="noopener" aria-label="Martinelli GmbH"></a>
+  <div class="eyebrow"><b>Thank you</b><span>13:00</span></div>
+  <h1>Questions?</h1>
+  <p class="contact-name">Simon Martinelli</p>
+  <dl class="contacts">
+    <dt>Email</dt><dd><a href="mailto:simon@martinelli.ch">simon@martinelli.ch</a></dd>
+    <dt>Web</dt><dd><a href="https://martinelli.ch" target="_blank" rel="noopener">martinelli.ch</a></dd>
+    <dt>LinkedIn</dt><dd><a href="https://linkedin.com/in/simonmartinelli" target="_blank" rel="noopener">linkedin.com/in/simonmartinelli</a></dd>
+    <dt>Bluesky</dt><dd><a href="https://bsky.app/profile/martinelli.ch" target="_blank" rel="noopener">@martinelli.ch</a></dd>
+    <dt>AI Unified Process</dt><dd><a href="https://unifiedprocess.ai" target="_blank" rel="noopener">unifiedprocess.ai</a></dd>
+    <dt>Lab</dt><dd><a href="https://github.com/martinelli-workshops/sdd-lab" target="_blank" rel="noopener">github.com/martinelli-workshops/sdd-lab</a></dd>
+  </dl>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/plugin/notes/notes.min.js"></script>
+<script src="deck.js"></script>
+</body>
+</html>

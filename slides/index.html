@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec-Driven Development Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="theme.css">
+<style>
+body { font-family: var(--font-body); padding: 48px 16px; }
+main { max-width: 1040px; margin: 0 auto; }
+h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; margin: 0 0 0.3em; }
+p.lead { color: var(--muted); margin: 0 0 2em; }
+.parts { font-size: 1.05rem; }
+@media (max-width: 760px) { .parts { grid-template-columns: 1fr; } }
+a.part-card { color: var(--ink); text-decoration: none; transition: border-color .15s; }
+a.part-card:hover, a.part-card:focus-visible { border-color: var(--accent); outline: none; }
+.part-card h3 { font-family: var(--font-display); }
+.part-card ul { margin: 0.3em 0 0; padding-left: 1.1em; display: grid; gap: 0.2em; }
+.part-card li::marker { color: var(--accent); }
+.labs { font-family: var(--font-mono); font-size: 0.75em; color: var(--muted); margin-top: 0.5em; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag" style="font-size:0.75rem">Hands-on Workshop · 2 days · 3 × 3 hours</span>
+  <h1>Spec-Driven Development with the AI Unified Process</h1>
+  <p class="lead">Simon Martinelli · Lab: <a href="https://github.com/martinelli-workshops/sdd-lab" style="color:var(--accent)">github.com/martinelli-workshops/sdd-lab</a></p>
+  <div class="parts">
+    <a class="part-card" href="part-1.html">
+      <span class="when">Day 1 · 10:00–13:00</span>
+      <h3>1 · From vision to use cases</h3>
+      <ul><li>Why spec-driven, choosing a method</li><li>AI Unified Process, Claude Code, security</li><li>Requirements, diagram, entity model</li><li>Use case specification, spec review</li></ul>
+      <span class="labs">Labs 1–4</span>
+    </a>
+    <a class="part-card" href="part-2.html">
+      <span class="when">Day 1 · 14:00–17:00</span>
+      <h3>2 · From use cases to code and tests</h3>
+      <ul><li>Stack file and layer skills</li><li>Implement, test, spec coverage</li><li>Changing requirements</li><li>Business process to E2E tests, tokens</li></ul>
+      <span class="labs">Labs 5–8</span>
+    </a>
+    <a class="part-card" href="part-3.html">
+      <span class="when">Day 2 · 10:00–13:00</span>
+      <h3>3 · Brownfield and the harness</h3>
+      <ul><li>Reverse engineering</li><li>Harness engineering, guides and sensors</li><li>ArchUnit, hooks, SonarQube</li><li>The Werkstatt, lessons, risks</li><li>Option: your own project</li></ul>
+      <span class="labs">Labs 9–12</span>
+    </a>
+  </div>
+  <p class="lead" style="margin-top:2em; font-size:0.85em">Keys in a deck: <code>S</code> speaker notes, <code>F</code> full screen, <code>Esc</code> overview. Click a lab timer to start it, double-click to reset.</p>
+</main>
+</body>
+</html>

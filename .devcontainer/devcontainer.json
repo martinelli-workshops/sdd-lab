@@ -1,5 +1,5 @@
 {
-  "name": "AIUP Workshop",
+  "name": "AI Unified Process Workshop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/java:1": {
@@ -28,7 +28,10 @@
         "chat.plugins.enabled": true,
         "chat.pluginLocations": {
           "/home/vscode/.aiup/marketplace/aiup-core": true,
-          "/home/vscode/.aiup/marketplace/aiup-vaadin-jooq": true
+          "/home/vscode/.aiup/marketplace/aiup-flyway": true,
+          "/home/vscode/.aiup/marketplace/aiup-jooq": true,
+          "/home/vscode/.aiup/marketplace/aiup-spring-boot": true,
+          "/home/vscode/.aiup/marketplace/aiup-vaadin": true
         }
       }
     }
