@@ -193,14 +193,15 @@
   <div class="eyebrow"><b>Foundations</b><span>10:16</span></div>
   <h2>Steps of AI adoption</h2>
   <div class="step-list">
-    <div class="box"><span class="n">0</span><div><b>Gated</b><p>Only older models approved, access to AI tools is gated and process-heavy</p></div></div>
+    <div class="box"><span class="n">0</span><div><b>Gated</b><p>Only older models approved, access to AI tools is restricted and process-heavy</p></div></div>
     <div class="box"><span class="n">1</span><div><b>Assisted</b><p>You and one agent as a pair. You review almost every change</p></div></div>
-    <div class="box" style="border-color:var(--accent)"><span class="n">2</span><div><b>Parallel</b><p>You orchestrate several agents. The agent checks its own work against specs and sensors</p></div></div>
-    <div class="box"><span class="n">3</span><div><b>Supervised autonomy</b><p>Pipelines of agents write nearly all the code. Humans own specs, architecture and review</p></div></div>
-    <div class="box"><span class="n">4</span><div><b>AI-native</b><p>Steering by intent. The organization is built around agents</p></div></div>
+    <div class="box" style="border-color:var(--accent)"><span class="n">2</span><div><b>Parallel</b><p>You orchestrate 5 to 10 agents, each in its own worktree. The agent checks its own work before you see it: tests, build, lint, E2E</p></div></div>
+    <div class="box"><span class="n">3</span><div><b>Supervised autonomy</b><p>Around 100 agents. Claude writes nearly all the code, code and security review are automated. The bottleneck is trust in the loop</p></div></div>
+    <div class="box"><span class="n">4</span><div><b>AI-native</b><p>Most agents are started by Claude itself. Humans steer by intent and monitor by exception</p></div></div>
   </div>
-  <p class="small muted" style="margin-top:0.6em">Today and this afternoon: step 1 to 2. Day 2 ends with step 3, the Werkstatt.</p>
-  <aside class="notes">Ask the room: where is your team today? Most are at 0 or 1. The jump from 1 to 2 needs specs and sensors, not a better model.</aside>
+  <p class="small muted" style="margin-top:0.6em">Day 1: step 1, plus the verification loop that step 2 needs. Day 2: harness and guardrails, and a first look at step 3 with the Werkstatt.</p>
+  <div class="source">Source: <a href="https://claude.ai/artifact/QhDZmzvWmorjQD65d1Emxa" target="_blank" rel="noopener">Boris Cherny, Steps of AI Adoption</a></div>
+  <aside class="notes">Ask the room: where is your team today? Most are at 0 or 1. The jump from 1 to 2 needs a self-verification loop, not a better model. Our addition: the specification is part of that loop, as input and as test oracle.</aside>
 </section>
 
 <section>
